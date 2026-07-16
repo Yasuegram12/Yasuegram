@@ -1,0 +1,9 @@
+*.apk
+*.aab
+*.keystore
+/build/
+/.gradle/
+/TMessagesProj/build/
+/TMessagesProj/.cxx/
+/local.properties
+*.log
