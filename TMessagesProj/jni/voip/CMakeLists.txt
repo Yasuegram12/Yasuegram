@@ -1915,9 +1915,6 @@ add_library(voipandroid STATIC
         voip/webrtc/modules/audio_device/android/opensles_common.cc
         voip/webrtc/modules/audio_device/android/opensles_player.cc
         voip/webrtc/modules/audio_device/android/opensles_recorder.cc
-        voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
-        voip/webrtc/modules/audio_device/android/aaudio_player.cc
-        voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
         voip/webrtc/sdk/android/native_api/video/video_source.cc
         voip/webrtc/sdk/android/native_api/video/wrapper.cc
         voip/webrtc/sdk/android/native_api/codecs/wrapper.cc
@@ -1991,6 +1988,9 @@ add_library(voipandroid STATIC
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_common.cc
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_player.cc
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_recorder.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_player.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_recorder.cc
         voip/webrtc/sdk/android/src/jni/video_decoder_fallback.cc
         voip/webrtc/sdk/android/src/jni/android_video_track_source.cc
         voip/webrtc/sdk/android/src/jni/software_video_encoder_factory.cc
@@ -2010,9 +2010,9 @@ add_library(voipandroid STATIC
 )
 
 set_source_files_properties(
-        voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
-        voip/webrtc/modules/audio_device/android/aaudio_player.cc
-        voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_player.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_recorder.cc
         PROPERTIES COMPILE_FLAGS "-target aarch64-none-linux-android26"
 )
 target_compile_options(voipandroid PUBLIC
