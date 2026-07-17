@@ -130,7 +130,7 @@ int AAudioPlayer::SpeakerVolumeIsAvailable(bool& available) {
 }
 
 void AAudioPlayer::OnErrorCallback(aaudio_result_t error) {
-  RTC_LOG(LS_ERROR) << "OnErrorCallback: " << AAudio_convertResultToText(error);
+  if (__builtin_available(android 26, *)) { RTC_LOG(LS_ERROR) << "OnErrorCallback: " << AAudio_convertResultToText(error); }
   // TODO(henrika): investigate if we can use a thread checker here. Initial
   // tests shows that this callback can sometimes be called on a unique thread
   // but according to the documentation it should be on the same thread as the

@@ -129,7 +129,7 @@ int AAudioRecorder::EnableBuiltInNS(bool enable) {
 }
 
 void AAudioRecorder::OnErrorCallback(aaudio_result_t error) {
-  RTC_LOG(LS_ERROR) << "OnErrorCallback: " << AAudio_convertResultToText(error);
+  if (__builtin_available(android 26, *)) { RTC_LOG(LS_ERROR) << "OnErrorCallback: " << AAudio_convertResultToText(error); }
   // RTC_DCHECK(thread_checker_aaudio_.IsCurrent());
   if (aaudio_.stream_state() == AAUDIO_STREAM_STATE_DISCONNECTED) {
     // The stream is disconnected and any attempt to use it will return
