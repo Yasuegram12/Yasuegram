@@ -2012,7 +2012,11 @@ add_library(voipandroid STATIC
         voip/org_telegram_messenger_voip_Instance.cpp
 )
 
+
 set_source_files_properties(
+        voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
+        voip/webrtc/modules/audio_device/android/aaudio_player.cc
+        voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
         voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
         voip/webrtc/sdk/android/src/jni/audio_device/aaudio_player.cc
         voip/webrtc/sdk/android/src/jni/audio_device/aaudio_recorder.cc
