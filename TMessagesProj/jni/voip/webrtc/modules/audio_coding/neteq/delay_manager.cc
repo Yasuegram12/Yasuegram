@@ -31,7 +31,7 @@ namespace {
 
 constexpr int kMinBaseMinimumDelayMs = 0;
 constexpr int kMaxBaseMinimumDelayMs = 10000;
-constexpr int kStartDelayMs = 80;
+constexpr int kStartDelayMs = 20; // Yasuegram test
 
 std::unique_ptr<ReorderOptimizer> MaybeCreateReorderOptimizer(
     const DelayManager::Config& config) {

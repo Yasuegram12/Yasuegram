@@ -437,7 +437,7 @@ void WebRtcVoiceEngine::Init() {
 #endif
     options.highpass_filter = true;
     options.stereo_swapping = false;
-    options.audio_jitter_buffer_max_packets = 80;
+    options.audio_jitter_buffer_max_packets = 20; // Yasuegram low latency
     options.audio_jitter_buffer_fast_accelerate = false;
     options.audio_jitter_buffer_min_delay_ms = 0;
     ApplyOptions(options);

@@ -32,12 +32,12 @@ class DelayManager {
 
     // Options that can be configured via field trial.
     double quantile = 0.95;
-    double forget_factor = 0.983;
+    double forget_factor = 0.95; // Yasuegram faster adaptation
     absl::optional<double> start_forget_weight = 2;
     absl::optional<int> resample_interval_ms = 500;
 
     bool use_reorder_optimizer = true;
-    double reorder_forget_factor = 0.9993;
+    double reorder_forget_factor = 0.995; // Yasuegram faster reorder
     int ms_per_loss_percent = 20;
 
     // Options that are externally populated.

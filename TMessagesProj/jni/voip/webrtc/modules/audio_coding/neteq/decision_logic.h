@@ -156,9 +156,9 @@ class DecisionLogic : public NetEqController {
   struct Config {
     Config();
 
-    bool enable_stable_delay_mode = true;
+    bool enable_stable_delay_mode = false; // Yasuegram ultra low latency
     bool combine_concealment_decision = true;
-    int deceleration_target_level_offset_ms = 10;
+    int deceleration_target_level_offset_ms = 0; // Yasuegram low latency
     int packet_history_size_ms = 2000;
     absl::optional<int> cng_timeout_ms = 1000;
   };

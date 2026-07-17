@@ -51,7 +51,7 @@ const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
     case AAUDIO_SHARING_MODE_EXCLUSIVE:
       return "EXCLUSIVE";
-    case AAUDIO_SHARING_MODE_EXCLUSIVE:
+    case AAUDIO_SHARING_MODE_SHARED:
       return "SHARED";
     default:
       return "UNKNOWN";
@@ -77,7 +77,7 @@ const char* FormatToString(int32_t id) {
       return "INVALID";
     case AAUDIO_FORMAT_UNSPECIFIED:
       return "UNSPECIFIED";
-    case AAUDIO_FORMAT_PCM_FLOAT:
+    case AAUDIO_FORMAT_PCM_I16:
       return "PCM_I16";
     case AAUDIO_FORMAT_PCM_FLOAT:
       return "FLOAT";
@@ -369,11 +369,11 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   // Use preferred channel configuration given by the audio parameters.
   AAudioStreamBuilder_setChannelCount(builder, audio_parameters().channels());
   // Always use 16-bit PCM audio sample format.
-  AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_FLOAT);
+  AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
   // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_EXCLUSIVE.
   // Ask for exclusive mode since this will give us the lowest possible latency.
   // If exclusive mode isn't available, shared mode will be used instead.
-  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_EXCLUSIVE);
+  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
   // Use the direction that was given at construction.
   AAudioStreamBuilder_setDirection(builder, direction_);
   // TODO(henrika): investigate performance using different performance modes.
@@ -440,11 +440,11 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested channel count";
     return false;
   }
-  if (AAudioStream_getFormat(stream_) != AAUDIO_FORMAT_PCM_FLOAT) {
+  if (AAudioStream_getFormat(stream_) != AAUDIO_FORMAT_PCM_I16) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested format";
     return false;
   }
-  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_EXCLUSIVE) {
+  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_SHARED) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested sharing mode";
     return false;
   }
@@ -477,11 +477,13 @@ bool AAudioWrapper::OptimizeBuffers() {
   if (direction() == AAUDIO_DIRECTION_INPUT) {
     return true;
   }
-  int32_t requested_buffer_size = 128;
+  int32_t requested_buffer_size = frames_per_burst / 2;
+  if (requested_buffer_size < 48) {
+    requested_buffer_size = 48;
+  }
   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
   AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);
-  RTC_LOG(LS_INFO) << "[Yasuegram] Forced low latency buffer: " << requested_buffer_size;
   int32_t new_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] New buffer size after request: " << new_buffer_size;
   if (new_buffer_size < requested_buffer_size) {
