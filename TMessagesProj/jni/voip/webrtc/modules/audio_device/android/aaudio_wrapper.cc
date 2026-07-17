@@ -19,7 +19,7 @@ static inline const char* AAudio_convertResultToText(aaudio_result_t) { return "
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/time_utils.h"
 
-#define LOG_ON_ERROR(op) if (__builtin_available(android 26, *)) {                                                       \
+#define LOG_ON_ERROR(op)                                                      \
   do {                                                                        \
     aaudio_result_t result = (op);                                            \
     if (result != AAUDIO_OK) {                                                \
@@ -49,18 +49,18 @@ const char* DirectionToString(aaudio_direction_t direction) {
     default:
       return "UNKNOWN";
   }
-} } while (0)
+}
 
 const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
     case AAUDIO_SHARING_MODE_EXCLUSIVE:
       return "EXCLUSIVE";
-    case AAUDIO_SHARING_MODE_SHARED:
+    case AAUDIO_SHARING_MODE_EXCLUSIVE:
       return "SHARED";
     default:
       return "UNKNOWN";
   }
-} } while (0)
+}
 
 const char* PerformanceModeToString(aaudio_performance_mode_t mode) {
   switch (mode) {
@@ -73,7 +73,7 @@ const char* PerformanceModeToString(aaudio_performance_mode_t mode) {
     default:
       return "UNKNOWN";
   }
-} } while (0)
+}
 
 const char* FormatToString(int32_t id) {
   switch (id) {
@@ -88,7 +88,7 @@ const char* FormatToString(int32_t id) {
     default:
       return "UNKNOWN";
   }
-} } while (0)
+}
 
 void ErrorCallback(AAudioStream* stream,
                    void* user_data,
@@ -99,7 +99,7 @@ void ErrorCallback(AAudioStream* stream,
                       << DirectionToString(aaudio_wrapper->direction());
   RTC_DCHECK(aaudio_wrapper->observer());
   aaudio_wrapper->observer()->OnErrorCallback(error);
-} } while (0)
+}
 
 aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
                                            void* user_data,
@@ -110,7 +110,7 @@ aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
   AAudioWrapper* aaudio_wrapper = reinterpret_cast<AAudioWrapper*>(user_data);
   RTC_DCHECK(aaudio_wrapper->observer());
   return aaudio_wrapper->observer()->OnDataCallback(audio_data, num_frames);
-} } while (0)
+}
 
 // Wraps the stream builder object to ensure that it is released properly when
 // the stream builder goes out of scope.
@@ -145,13 +145,13 @@ AAudioWrapper::AAudioWrapper(AudioManager* audio_manager,
       : audio_parameters_ = audio_manager->GetRecordAudioParameters();
   aaudio_thread_checker_.Detach();
   RTC_LOG(LS_INFO) << audio_parameters_.ToString();
-} } while (0)
+}
 
 AAudioWrapper::~AAudioWrapper() {
   RTC_LOG(LS_INFO) << "dtor";
   RTC_DCHECK(thread_checker_.IsCurrent());
   RTC_DCHECK(!stream_);
-} } while (0)
+}
 
 bool AAudioWrapper::Init() {
   RTC_LOG(LS_INFO) << "Init";
@@ -175,7 +175,7 @@ bool AAudioWrapper::Init() {
   }
   LogStreamState();
   return true;
-} } while (0)
+}
 
 bool AAudioWrapper::Start() {
   RTC_LOG(LS_INFO) << "Start";
@@ -191,7 +191,7 @@ bool AAudioWrapper::Start() {
   RETURN_ON_ERROR(AAudioStream_requestStart(stream_), false);
   LogStreamState();
   return true;
-} } while (0)
+}
 
 bool AAudioWrapper::Stop() {
   RTC_LOG(LS_INFO) << "Stop: " << DirectionToString(direction());
@@ -201,7 +201,7 @@ bool AAudioWrapper::Stop() {
   CloseStream();
   aaudio_thread_checker_.Detach();
   return true;
-} } while (0)
+}
 
 double AAudioWrapper::EstimateLatencyMillis() const {
   RTC_DCHECK(stream_);
@@ -239,7 +239,7 @@ double AAudioWrapper::EstimateLatencyMillis() const {
     }
   }
   return latency_millis;
-} } while (0)
+}
 
 // Returns new buffer size or a negative error value if buffer size could not
 // be increased.
@@ -264,12 +264,12 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
   buffer_size = AAudioStream_setBufferSizeInFrames(stream_, buffer_size);
   if (buffer_size < 0) {
     RTC_LOG(LS_ERROR) << "Failed to change buffer size: "
-    if (__builtin_available(android 26, *)) { RTC_LOG(LS_INFO) << "buffer size in frames: " << AAudio_convertResultToText(buffer_size); }
+                      << AAudio_convertResultToText(buffer_size);
     return false;
   }
   RTC_LOG(LS_INFO) << "Buffer size changed to: " << buffer_size;
   return true;
-} } while (0)
+}
 
 void AAudioWrapper::ClearInputStream(void* audio_data, int32_t num_frames) {
   RTC_LOG(LS_INFO) << "ClearInputStream";
@@ -280,85 +280,85 @@ void AAudioWrapper::ClearInputStream(void* audio_data, int32_t num_frames) {
   do {
     cleared_frames = AAudioStream_read(stream_, audio_data, num_frames, 0);
   } while (cleared_frames > 0);
-} } while (0)
+}
 
 AAudioObserverInterface* AAudioWrapper::observer() const {
   return observer_;
-} } while (0)
+}
 
 AudioParameters AAudioWrapper::audio_parameters() const {
   return audio_parameters_;
-} } while (0)
+}
 
 int32_t AAudioWrapper::samples_per_frame() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getSamplesPerFrame(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::buffer_size_in_frames() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getBufferSizeInFrames(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::buffer_capacity_in_frames() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getBufferCapacityInFrames(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::device_id() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getDeviceId(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::xrun_count() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getXRunCount(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::format() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getFormat(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::sample_rate() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getSampleRate(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::channel_count() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getChannelCount(stream_);
-} } while (0)
+}
 
 int32_t AAudioWrapper::frames_per_callback() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getFramesPerDataCallback(stream_);
-} } while (0)
+}
 
 aaudio_sharing_mode_t AAudioWrapper::sharing_mode() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getSharingMode(stream_);
-} } while (0)
+}
 
 aaudio_performance_mode_t AAudioWrapper::performance_mode() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getPerformanceMode(stream_);
-} } while (0)
+}
 
 aaudio_stream_state_t AAudioWrapper::stream_state() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getState(stream_);
-} } while (0)
+}
 
 int64_t AAudioWrapper::frames_written() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getFramesWritten(stream_);
-} } while (0)
+}
 
 int64_t AAudioWrapper::frames_read() const {
   RTC_DCHECK(stream_);
   return AAudioStream_getFramesRead(stream_);
-} } while (0)
+}
 
 void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   RTC_LOG(LS_INFO) << "SetStreamConfiguration";
@@ -391,7 +391,7 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   // Request that AAudio calls this functions if any error occurs on a callback
   // thread.
   AAudioStreamBuilder_setErrorCallback(builder, ErrorCallback, this);
-} } while (0)
+}
 
 bool AAudioWrapper::OpenStream(AAudioStreamBuilder* builder) {
   RTC_LOG(LS_INFO) << "OpenStream";
@@ -401,14 +401,14 @@ bool AAudioWrapper::OpenStream(AAudioStreamBuilder* builder) {
   stream_ = stream;
   LogStreamConfiguration();
   return true;
-} } while (0)
+}
 
 void AAudioWrapper::CloseStream() {
   RTC_LOG(LS_INFO) << "CloseStream";
   RTC_DCHECK(stream_);
   LOG_ON_ERROR(AAudioStream_close(stream_));
   stream_ = nullptr;
-} } while (0)
+}
 
 void AAudioWrapper::LogStreamConfiguration() {
   RTC_DCHECK(stream_);
@@ -424,12 +424,12 @@ void AAudioWrapper::LogStreamConfiguration() {
   ss << ", device id=" << AAudioStream_getDeviceId(stream_);
   ss << ", frames per callback=" << frames_per_callback();
   RTC_LOG(LS_INFO) << ss.str();
-} } while (0)
+}
 
 void AAudioWrapper::LogStreamState() {
   RTC_LOG(LS_INFO) << "AAudio stream state: "
                    << AAudio_convertStreamStateToText(stream_state());
-} } while (0)
+}
 
 bool AAudioWrapper::VerifyStreamConfiguration() {
   RTC_LOG(LS_INFO) << "VerifyStreamConfiguration";
@@ -448,7 +448,7 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested format";
     return false;
   }
-  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_SHARED) {
+  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_EXCLUSIVE) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested sharing mode";
     return false;
   }
@@ -467,7 +467,7 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
     return false;
   }
   return true;
-} } while (0)
+}
 
 bool AAudioWrapper::OptimizeBuffers() {
   RTC_LOG(LS_INFO) << "OptimizeBuffers";
@@ -498,6 +498,6 @@ bool AAudioWrapper::OptimizeBuffers() {
   // Maximum number of frames that can be filled without blocking.
   RTC_LOG(LS_INFO) << "buffer burst size in frames: " << buffer_size;
   return true;
-} } while (0)
+}
 
 }  // namespace webrtc

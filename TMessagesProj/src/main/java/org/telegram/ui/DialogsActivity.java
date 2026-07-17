@@ -532,7 +532,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     public boolean isReplyTo, isQuote;
     public long replyMessageAuthor;
     public long forwardOriginalChannel;
-    private int initialDialogsType;
+    private int initialDialogsType = DIALOGS_TYPE_GROUPS_ONLY;
 
     private boolean checkingImportDialog;
 
