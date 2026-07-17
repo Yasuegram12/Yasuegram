@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <android/api-level.h>
 #include "sdk/android/native_api/audio_device_module/audio_device_android.h"
 
 #include <stdlib.h>
@@ -187,7 +188,13 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
   if (audio_layer == AudioDeviceModule::kPlatformDefaultAudio) {
 #if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
     // AAudio based audio for both input and output.
-    audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
+    if (android_get_device_api_level() >= 26) {
+      audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
+    } else if (jni::IsLowLatencyInputSupported(env, j_context) && jni::IsLowLatencyOutputSupported(env, j_context)) {
+      audio_layer = AudioDeviceModule::kAndroidOpenSLESAudio;
+    } else {
+      audio_layer = AudioDeviceModule::kAndroidJavaAudio;
+    }
 #else
     if (jni::IsLowLatencyInputSupported(env, j_context) &&
         jni::IsLowLatencyOutputSupported(env, j_context)) {

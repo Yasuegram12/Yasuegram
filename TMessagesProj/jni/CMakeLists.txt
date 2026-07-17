@@ -666,6 +666,7 @@ target_link_libraries(${NATIVE_LIB}
         EGL
         android
         OpenSLES
+        aaudio
         cpufeatures
         breakpad)
 
