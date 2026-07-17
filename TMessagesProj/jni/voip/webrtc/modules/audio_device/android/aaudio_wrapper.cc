@@ -12,7 +12,6 @@
 
 #include "modules/audio_device/android/audio_manager.h"
 #include "rtc_base/logging.h"
-
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/time_utils.h"
 
@@ -50,7 +49,7 @@ const char* DirectionToString(aaudio_direction_t direction) {
 
 const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
-    case AAUDIO_SHARING_MODE_SHARED:
+    case AAUDIO_SHARING_MODE_EXCLUSIVE:
       return "EXCLUSIVE";
     case AAUDIO_SHARING_MODE_SHARED:
       return "SHARED";
@@ -371,7 +370,7 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   AAudioStreamBuilder_setChannelCount(builder, audio_parameters().channels());
   // Always use 16-bit PCM audio sample format.
   AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_SHARED.
+  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_EXCLUSIVE.
   // Ask for exclusive mode since this will give us the lowest possible latency.
   // If exclusive mode isn't available, shared mode will be used instead.
   AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
