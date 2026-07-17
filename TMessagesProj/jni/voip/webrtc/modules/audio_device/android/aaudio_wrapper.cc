@@ -13,9 +13,6 @@
 #include "modules/audio_device/android/audio_manager.h"
 #include "rtc_base/logging.h"
 
-#if __ANDROID_API__ < 26
-static inline const char* AAudio_convertResultToText(aaudio_result_t) { return "AAudio error"; }
-#endif
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/time_utils.h"
 
