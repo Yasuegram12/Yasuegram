@@ -666,7 +666,7 @@ target_link_libraries(${NATIVE_LIB}
         EGL
         android
         OpenSLES
-        aaudio
+        ${CMAKE_SYSROOT}/usr/lib/aarch64-linux-android/26/libaaudio.so
         cpufeatures
         breakpad)
 
