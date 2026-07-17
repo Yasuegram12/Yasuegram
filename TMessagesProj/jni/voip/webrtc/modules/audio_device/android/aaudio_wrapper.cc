@@ -50,7 +50,7 @@ const char* DirectionToString(aaudio_direction_t direction) {
 
 const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
-    case AAUDIO_SHARING_MODE_EXCLUSIVE:
+    case AAUDIO_SHARING_MODE_SHARED:
       return "EXCLUSIVE";
     case AAUDIO_SHARING_MODE_SHARED:
       return "SHARED";
@@ -371,10 +371,10 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   AAudioStreamBuilder_setChannelCount(builder, audio_parameters().channels());
   // Always use 16-bit PCM audio sample format.
   AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_EXCLUSIVE.
+  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_SHARED.
   // Ask for exclusive mode since this will give us the lowest possible latency.
   // If exclusive mode isn't available, shared mode will be used instead.
-  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_EXCLUSIVE);
+  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
   // Use the direction that was given at construction.
   AAudioStreamBuilder_setDirection(builder, direction_);
   // TODO(henrika): investigate performance using different performance modes.
@@ -445,7 +445,7 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested format";
     return false;
   }
-  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_EXCLUSIVE) {
+  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_SHARED) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested sharing mode";
     return false;
   }
