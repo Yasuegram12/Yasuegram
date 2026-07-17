@@ -18,6 +18,10 @@
 #include "modules/audio_device/fine_audio_buffer.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
+
+#if __ANDROID_API__ < 26
+static inline const char* AAudio_convertResultToText(aaudio_result_t) { return "AAudio error"; }
+#endif
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {

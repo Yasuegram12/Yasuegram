@@ -19,6 +19,10 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 
+#if __ANDROID_API__ < 26
+static inline const char* AAudio_convertResultToText(aaudio_result_t) { return "AAudio error"; }
+#endif
+
 namespace webrtc {
 
 AAudioPlayer::AAudioPlayer(AudioManager* audio_manager)
