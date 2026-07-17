@@ -2012,6 +2012,12 @@ add_library(voipandroid STATIC
 
 
 set_source_files_properties(
+        voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
+        voip/webrtc/modules/audio_device/android/aaudio_player.cc
+        voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_player.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_recorder.cc
         PROPERTIES COMPILE_FLAGS "-target aarch64-none-linux-android26"
 )
 target_compile_options(voipandroid PUBLIC
