@@ -245,10 +245,15 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
   RTC_DCHECK(aaudio_thread_checker_.IsCurrent());
   RTC_DCHECK_EQ(direction(), AAUDIO_DIRECTION_OUTPUT);
   aaudio_result_t buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
-  // Try to increase size of buffer with one burst to reduce risk of underrun.
+  // Yasuegram ultra low latency:
+  // Avoid growing buffer too much after underruns.
   buffer_size += frames_per_burst();
-  // Verify that the new buffer size is not larger than max capacity.
-  // TODO(henrika): keep track of case when we reach the capacity limit.
+
+  // Keep latency target between 64 and 128 frames.
+  if (buffer_size > 128) {
+    buffer_size = 128;
+  }
+
   const int32_t max_buffer_size = buffer_capacity_in_frames();
   if (buffer_size > max_buffer_size) {
     RTC_LOG(LS_ERROR) << "Required buffer size (" << buffer_size
@@ -474,10 +479,20 @@ bool AAudioWrapper::OptimizeBuffers() {
   RTC_LOG(LS_INFO) << "frames per burst for optimal performance: "
                    << frames_per_burst;
   frames_per_burst_ = frames_per_burst;
-  if (direction() == AAUDIO_DIRECTION_INPUT) {
-    return true;
+
+  RTC_LOG(LS_INFO) << "[Yasuegram] Original frames per burst: "
+                   << frames_per_burst_;
+
+  // Yasuegram ultra low latency tuning
+  int32_t requested_buffer_size = frames_per_burst_;
+
+  if (requested_buffer_size < 64) {
+    requested_buffer_size = 64;
   }
-  int32_t requested_buffer_size = 128;
+
+  if (requested_buffer_size > 128) {
+    requested_buffer_size = 128;
+  }
   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
   AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);

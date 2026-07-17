@@ -131,7 +131,7 @@ class NetEq {
 
     int sample_rate_hz = 48000;  // Initial value. Will change with input data.
     size_t max_packets_in_buffer = 200;
-    int max_delay_ms = 0;
+    int max_delay_ms = 20; // Yasuegram ultra low latency
     int min_delay_ms = 0;
     bool enable_fast_accelerate = false;
     bool enable_muted_state = false;

@@ -102,6 +102,11 @@ void FineAudioBuffer::GetPlayoutData(rtc::ArrayView<int16_t> audio_buffer,
   memmove(playout_buffer_.data(), playout_buffer_.data() + audio_buffer.size(),
           (playout_buffer_.size() - audio_buffer.size()) * sizeof(int16_t));
   playout_buffer_.SetSize(playout_buffer_.size() - audio_buffer.size());
+
+  RTC_LOG(LS_INFO) << "[Yasuegram] FineAudioBuffer remaining: "
+                   << playout_buffer_.size()
+                   << " requested: "
+                   << audio_buffer.size();
   // Cache playout latency for usage in DeliverRecordedData();
   playout_delay_ms_ = playout_delay_ms;
 }

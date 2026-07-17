@@ -142,7 +142,7 @@ int GetFrameSizeMs(const SdpAudioFormat& format) {
     return *(std::end(kOpusSupportedFrameLengths) - 1);
   }
 
-  return AudioEncoderOpusConfig::kDefaultFrameSizeMs;
+  return 10; // Yasuegram force Opus 10ms frame
 }
 
 void FindSupportedFrameLengths(int min_frame_length_ms,

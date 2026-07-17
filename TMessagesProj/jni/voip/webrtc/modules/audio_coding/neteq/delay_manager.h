@@ -42,7 +42,7 @@ class DelayManager {
 
     // Options that are externally populated.
     int max_packets_in_buffer = 200;
-    int base_minimum_delay_ms = 0;
+    int base_minimum_delay_ms = 5; // Yasuegram ultra low latency
   };
 
   DelayManager(const Config& config, const TickTimer* tick_timer);

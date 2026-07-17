@@ -439,7 +439,7 @@ void WebRtcVoiceEngine::Init() {
     options.stereo_swapping = false;
     options.audio_jitter_buffer_max_packets = 20; // Yasuegram low latency
     options.audio_jitter_buffer_fast_accelerate = false;
-    options.audio_jitter_buffer_min_delay_ms = 0;
+    options.audio_jitter_buffer_min_delay_ms = 5; // Yasuegram ultra low latency
     ApplyOptions(options);
   }
   initialized_ = true;
