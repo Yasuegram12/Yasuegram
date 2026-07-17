@@ -468,31 +468,31 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
 bool AAudioWrapper::OptimizeBuffers() {
   RTC_LOG(LS_INFO) << "OptimizeBuffers";
   RTC_DCHECK(stream_);
-  // Maximum number of frames that can be filled without blocking.
   RTC_LOG(LS_INFO) << "max buffer capacity in frames: "
                    << buffer_capacity_in_frames();
-  // Query the number of frames that the application should read or write at
-  // one time for optimal performance.
   int32_t frames_per_burst = AAudioStream_getFramesPerBurst(stream_);
   RTC_LOG(LS_INFO) << "frames per burst for optimal performance: "
                    << frames_per_burst;
   frames_per_burst_ = frames_per_burst;
   if (direction() == AAUDIO_DIRECTION_INPUT) {
-    // There is no point in calling setBufferSizeInFrames() for input streams
-    // since it has no effect on the performance (latency in this case).
     return true;
   }
-  // Set buffer size to same as burst size to guarantee lowest possible latency.
-  // This size might change for output streams if underruns are detected and
-  // automatic buffer adjustment is enabled.
-  AAudioStream_setBufferSizeInFrames(stream_, frames_per_burst);
-  int32_t buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
-  if (buffer_size != frames_per_burst) {
-    RTC_LOG(LS_ERROR) << "Failed to use optimal buffer burst size";
-    return false;
+  int32_t requested_buffer_size = frames_per_burst / 2;
+  if (requested_buffer_size < 48) {
+    requested_buffer_size = 48;
   }
-  // Maximum number of frames that can be filled without blocking.
-  RTC_LOG(LS_INFO) << "buffer burst size in frames: " << buffer_size;
+  int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
+  RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
+  AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);
+  int32_t new_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
+  RTC_LOG(LS_INFO) << "[Yasuegram] New buffer size after request: " << new_buffer_size;
+  if (new_buffer_size < requested_buffer_size) {
+    RTC_LOG(LS_WARNING) << "[Yasuegram] System returned smaller buffer (" << new_buffer_size << ") than requested (" << requested_buffer_size << "). Using it.";
+  }
+  if (new_buffer_size != requested_buffer_size) {
+    RTC_LOG(LS_WARNING) << "[Yasuegram] System did not accept requested buffer size. Using system value: " << new_buffer_size;
+  }
+  RTC_LOG(LS_INFO) << "buffer burst size in frames: " << new_buffer_size;
   return true;
 }
 
