@@ -70,8 +70,8 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAAudioAudioDeviceModule(
       AudioDeviceModule::kAndroidAAudioAudio, false /* use_stereo_input */,
       false /* use_stereo_output */,
       jni::kLowLatencyModeDelayEstimateInMilliseconds,
-      std::make_unique<AAudioRecorder>(input_parameters),
-      std::make_unique<AAudioPlayer>(output_parameters));
+      std::make_unique<AAudioRecorder>(audio_manager),
+      std::make_unique<AAudioPlayer>(audio_manager));
 }
 
 rtc::scoped_refptr<AudioDeviceModule>
@@ -96,7 +96,7 @@ CreateJavaInputAndAAudioOutputAudioDeviceModule(JNIEnv* env,
       AudioDeviceModule::kAndroidJavaInputAndOpenSLESOutputAudio,
       false /* use_stereo_input */, false /* use_stereo_output */,
       jni::kLowLatencyModeDelayEstimateInMilliseconds, std::move(audio_input),
-      std::make_unique<AAudioPlayer>(output_parameters));
+      std::make_unique<AAudioPlayer>(audio_manager));
 }
 #endif
 
