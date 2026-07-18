@@ -427,19 +427,19 @@ void WebRtcVoiceEngine::Init() {
   // Set default engine options.
   {
     AudioOptions options;
-    options.echo_cancellation = true;
-    options.auto_gain_control = true;
+    options.echo_cancellation = false; // Yasuegram ultra low latency
+    options.auto_gain_control = false; // Yasuegram ultra low latency
 #if defined(WEBRTC_IOS)
     // On iOS, VPIO provides built-in NS.
     options.noise_suppression = false;
 #else
-    options.noise_suppression = true;
+    options.noise_suppression = false; // Yasuegram ultra low latency
 #endif
-    options.highpass_filter = true;
+    options.highpass_filter = false; // Yasuegram ultra low latency
     options.stereo_swapping = false;
     options.audio_jitter_buffer_max_packets = 20; // Yasuegram low latency
-    options.audio_jitter_buffer_fast_accelerate = false;
-    options.audio_jitter_buffer_min_delay_ms = 5; // Yasuegram ultra low latency
+    options.audio_jitter_buffer_fast_accelerate = true; // Yasuegram low latency
+    options.audio_jitter_buffer_min_delay_ms = 0; // Yasuegram low latency // Yasuegram ultra low latency
     ApplyOptions(options);
   }
   initialized_ = true;
@@ -488,7 +488,7 @@ void WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
       *options.ios_force_software_aec_HACK) {
     // EC may be forced on for a device known to have non-functioning platform
     // AEC.
-    options.echo_cancellation = true;
+    options.echo_cancellation = false; // Yasuegram ultra low latency
     RTC_LOG(LS_WARNING)
         << "Force software AEC on iOS. May conflict with platform AEC.";
   } else {
