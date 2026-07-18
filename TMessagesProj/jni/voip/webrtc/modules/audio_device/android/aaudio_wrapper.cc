@@ -51,9 +51,9 @@ const char* DirectionToString(aaudio_direction_t direction) {
 
 const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
-    case AAUDIO_SHARING_MODE_SHARED:
-      return "EXCLUSIVE";
     case AAUDIO_SHARING_MODE_EXCLUSIVE:
+      return "EXCLUSIVE";
+    case AAUDIO_SHARING_MODE_SHARED:
       return "SHARED";
     default:
       return "UNKNOWN";
