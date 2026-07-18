@@ -1989,7 +1989,6 @@ add_library(voipandroid STATIC
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_common.cc
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_player.cc
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_recorder.cc
-        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
         voip/webrtc/modules/audio_device/android/aaudio_player.cc
         voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
         voip/webrtc/sdk/android/src/jni/video_decoder_fallback.cc
