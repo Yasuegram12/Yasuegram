@@ -2341,7 +2341,7 @@ simpleAudioBlock random_id:long random_bytes:string raw_data:string = DecryptedA
 					else if(stm->frameDuration>30)
 						stm->jitterBuffer->SetMinPacketCount((uint32_t) ServerConfig::GetSharedInstance()->GetInt("jitter_initial_delay_40", 4));
 					else
-						stm->jitterBuffer->SetMinPacketCount((uint32_t) ServerConfig::GetSharedInstance()->GetInt("jitter_initial_delay_20", 1));
+						stm->jitterBuffer->SetMinPacketCount((uint32_t) ServerConfig::GetSharedInstance()->GetInt("jitter_initial_delay_20", 6));
 					stm->decoder=NULL;
 				}else if(stm->type==STREAM_TYPE_VIDEO){
 					/*if(!stm->packetReassembler){

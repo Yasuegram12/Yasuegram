@@ -33,11 +33,11 @@ namespace{
 	}
 }
 
-tgvoip::OpusEncoder::OpusEncoder(MediaStreamItf *source, bool needSecondary):queue(11), bufferPool(480*2, 10){
+tgvoip::OpusEncoder::OpusEncoder(MediaStreamItf *source, bool needSecondary):queue(11), bufferPool(960*2, 10){
 	this->source=source;
 	source->SetCallback(tgvoip::OpusEncoder::Callback, this);
 	enc=opus_encoder_create(48000, 1, OPUS_APPLICATION_VOIP, NULL);
-	opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(6));
+	opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(10));
 	opus_encoder_ctl(enc, OPUS_SET_PACKET_LOSS_PERC(1));
 	opus_encoder_ctl(enc, OPUS_SET_INBAND_FEC(1));
 	opus_encoder_ctl(enc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
@@ -47,7 +47,7 @@ tgvoip::OpusEncoder::OpusEncoder(MediaStreamItf *source, bool needSecondary):que
 	running=false;
 	echoCanceller=NULL;
 	complexity=10;
-	frameDuration=10;
+	frameDuration=20;
 	levelMeter=NULL;
 	vadNoVoiceBitrate=static_cast<uint32_t>(ServerConfig::GetSharedInstance()->GetInt("audio_vad_no_voice_bitrate", 6000));
 	vadModeVoiceBandwidth=serverConfigValueToBandwidth(ServerConfig::GetSharedInstance()->GetInt("audio_vad_bandwidth", 3));
@@ -57,7 +57,7 @@ tgvoip::OpusEncoder::OpusEncoder(MediaStreamItf *source, bool needSecondary):que
 
 	if(needSecondary){
 		secondaryEncoder=opus_encoder_create(48000, 1, OPUS_APPLICATION_VOIP, NULL);
-		opus_encoder_ctl(secondaryEncoder, OPUS_SET_COMPLEXITY(6));
+		opus_encoder_ctl(secondaryEncoder, OPUS_SET_COMPLEXITY(10));
 		opus_encoder_ctl(secondaryEncoder, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
 		//opus_encoder_ctl(secondaryEncoder, OPUS_SET_VBR(0));
 		opus_encoder_ctl(secondaryEncoder, OPUS_SET_BITRATE(8000));
@@ -130,8 +130,8 @@ size_t tgvoip::OpusEncoder::Callback(unsigned char *data, size_t len, void* para
 	OpusEncoder* e=(OpusEncoder*)param;
 	unsigned char* buf=e->bufferPool.Get();
 	if(buf){
-		assert(len==480*2);
-		memcpy(buf, data, 480*2);
+		assert(len==960*2);
+		memcpy(buf, data, 960*2);
 		e->queue.Put(buf);
 	}else{
 		LOGW("opus_encoder: no buffer slots left");
@@ -154,11 +154,11 @@ void tgvoip::OpusEncoder::SetEchoCanceller(EchoCanceller* aec){
 
 void tgvoip::OpusEncoder::RunThread(){
 	uint32_t bufferedCount=0;
-	uint32_t packetsPerFrame=frameDuration/10;
+	uint32_t packetsPerFrame=frameDuration/20;
 	LOGV("starting encoder, packets per frame=%d", packetsPerFrame);
 	int16_t* frame;
 	if(packetsPerFrame>1)
-		frame=(int16_t*) malloc(480*2*packetsPerFrame);
+		frame=(int16_t*) malloc(960*2*packetsPerFrame);
 	else
 		frame=NULL;
 	bool frameHasVoice=false;
@@ -168,16 +168,16 @@ void tgvoip::OpusEncoder::RunThread(){
 		if(packet){
 			bool hasVoice=true;
 			if(echoCanceller)
-				echoCanceller->ProcessInput(packet, 480, hasVoice);
+				echoCanceller->ProcessInput(packet, 960, hasVoice);
 			if(!postProcEffects.empty()){
 				for(effects::AudioEffect* effect:postProcEffects){
-					effect->Process(packet, 480);
+					effect->Process(packet, 960);
 				}
 			}
 			if(packetsPerFrame==1){
-				Encode(packet, 480);
+				Encode(packet, 960);
 			}else{
-				memcpy(frame+(480*bufferedCount), packet, 480*2);
+				memcpy(frame+(960*bufferedCount), packet, 960*2);
     			frameHasVoice=frameHasVoice || hasVoice;
 				bufferedCount++;
 				if(bufferedCount==packetsPerFrame){
@@ -207,7 +207,7 @@ void tgvoip::OpusEncoder::RunThread(){
 							opus_encoder_ctl(secondaryEncoder, OPUS_SET_BANDWIDTH(secondaryEnabledBandwidth));
 						}
 					}
-					Encode(frame, 480*packetsPerFrame);
+					Encode(frame, 960*packetsPerFrame);
 					bufferedCount=0;
 					frameHasVoice=false;
 				}

@@ -180,7 +180,7 @@ VoIPController::VoIPController() : activeNetItfName(""),
 	stm->type=STREAM_TYPE_AUDIO;
 	stm->codec=CODEC_OPUS;
 	stm->enabled=1;
-	stm->frameDuration=20;
+	stm->frameDuration=60;
 	outgoingStreams.push_back(stm);
 
 }
@@ -1125,7 +1125,7 @@ void VoIPController::InitializeAudio(){
 			LOGI("Forcing software AEC because built-in is not good");
 		}
 		if(!(effects & audio::AudioInputAndroid::EFFECT_NS)){
-			config.enableNS=false;
+			config.enableNS=true;
 			LOGI("Forcing software NS because built-in is not good");
 		}
 	}
@@ -2328,7 +2328,7 @@ simpleAudioBlock random_id:long random_bytes:string raw_data:string = DecryptedA
 					stm->codec=(uint32_t) in.ReadInt32();
 				}
 				in.ReadInt16();
-				stm->frameDuration=20;
+				stm->frameDuration=60;
 				stm->enabled=in.ReadByte()==1;
 				if(stm->type==STREAM_TYPE_VIDEO && peerVersion<9){
 					LOGV("Skipping video stream for old protocol version");
@@ -2341,7 +2341,7 @@ simpleAudioBlock random_id:long random_bytes:string raw_data:string = DecryptedA
 					else if(stm->frameDuration>30)
 						stm->jitterBuffer->SetMinPacketCount((uint32_t) ServerConfig::GetSharedInstance()->GetInt("jitter_initial_delay_40", 4));
 					else
-						stm->jitterBuffer->SetMinPacketCount((uint32_t) ServerConfig::GetSharedInstance()->GetInt("jitter_initial_delay_20", 1));
+						stm->jitterBuffer->SetMinPacketCount((uint32_t) ServerConfig::GetSharedInstance()->GetInt("jitter_initial_delay_20", 6));
 					stm->decoder=NULL;
 				}else if(stm->type==STREAM_TYPE_VIDEO){
 					/*if(!stm->packetReassembler){

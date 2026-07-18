@@ -57,7 +57,7 @@ void tgvoip::OpusDecoder::Initialize(bool isAsync, bool needEC){
 	lastDecoded=NULL;
 	outputBufferSize=0;
 	echoCanceller=NULL;
-	frameDuration=10;
+	frameDuration=20;
 	consecutiveLostPackets=0;
 	enableDTX=false;
 	silentPacketCount=0;
@@ -263,7 +263,7 @@ int tgvoip::OpusDecoder::DecodeNextFrame(){
 
 void tgvoip::OpusDecoder::SetFrameDuration(uint32_t duration){
 	frameDuration=duration;
-	packetsPerFrame=frameDuration/10;
+	packetsPerFrame=frameDuration/20;
 }
 
 

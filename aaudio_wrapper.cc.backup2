@@ -9,8 +9,6 @@
  */
 
 #include "modules/audio_device/android/aaudio_wrapper.h"
-#include <pthread.h>
-#include <sched.h>
 
 #include "modules/audio_device/android/audio_manager.h"
 #include "rtc_base/logging.h"
@@ -103,17 +101,6 @@ aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
                                            void* user_data,
                                            void* audio_data,
                                            int32_t num_frames) {
-
-  // Yasuegram audio callback priority tuning
-  static bool priority_set = false;
-  if (!priority_set) {
-    struct sched_param param;
-    param.sched_priority = 2;
-    int result = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
-    RTC_LOG(LS_INFO) << "[Yasuegram] Audio thread priority result: " << result;
-    priority_set = true;
-  }
-
   RTC_DCHECK(user_data);
   RTC_DCHECK(audio_data);
   AAudioWrapper* aaudio_wrapper = reinterpret_cast<AAudioWrapper*>(user_data);
@@ -376,13 +363,6 @@ int64_t AAudioWrapper::frames_read() const {
 
 void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   RTC_LOG(LS_INFO) << "SetStreamConfiguration";
-
-  // Yasuegram ultra low latency thread tuning
-  pthread_t thread = pthread_self();
-  struct sched_param param;
-  param.sched_priority = 2;
-  pthread_setschedparam(thread, SCHED_FIFO, &param);
-
   RTC_DCHECK(builder);
   RTC_DCHECK(thread_checker_.IsCurrent());
   // Request usage of default primary output/input device.
@@ -506,12 +486,12 @@ bool AAudioWrapper::OptimizeBuffers() {
   // Yasuegram ultra low latency tuning
   int32_t requested_buffer_size = frames_per_burst_;
 
-  if (requested_buffer_size < 32) {
-    requested_buffer_size = 32;
+  if (requested_buffer_size < 64) {
+    requested_buffer_size = 64;
   }
 
-  if (requested_buffer_size > 64) {
-    requested_buffer_size = 64;
+  if (requested_buffer_size > 128) {
+    requested_buffer_size = 128;
   }
   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;

@@ -366,7 +366,6 @@ _platformContext(platformContext) {
         audioOptions.echo_cancellation = false;
         audioOptions.noise_suppression = false;
         audioOptions.audio_jitter_buffer_fast_accelerate = true;
-        audioOptions.audio_jitter_buffer_min_delay_ms = 0;
 
         std::vector<std::string> streamIds;
         streamIds.push_back("1");
@@ -385,7 +384,7 @@ _platformContext(platformContext) {
         const uint8_t opusMinBitrateKbps = 12;
         const uint8_t opusMaxBitrateKbps = 64;
         const uint8_t opusStartBitrateKbps = 24;
-        const uint8_t opusPTimeMs = 10;
+        const uint8_t opusPTimeMs = 20;
         cricket::AudioCodec opusCodec = cricket::CreateAudioCodec(opusSdpPayload, opusSdpName, opusClockrate, opusSdpChannels);
         opusCodec.AddFeedbackParam(cricket::FeedbackParam(cricket::kRtcpFbParamTransportCc));
         opusCodec.SetParam(cricket::kCodecParamMinBitrate, opusMinBitrateKbps);

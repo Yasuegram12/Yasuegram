@@ -103,17 +103,6 @@ aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
                                            void* user_data,
                                            void* audio_data,
                                            int32_t num_frames) {
-
-  // Yasuegram audio callback priority tuning
-  static bool priority_set = false;
-  if (!priority_set) {
-    struct sched_param param;
-    param.sched_priority = 2;
-    int result = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
-    RTC_LOG(LS_INFO) << "[Yasuegram] Audio thread priority result: " << result;
-    priority_set = true;
-  }
-
   RTC_DCHECK(user_data);
   RTC_DCHECK(audio_data);
   AAudioWrapper* aaudio_wrapper = reinterpret_cast<AAudioWrapper*>(user_data);
