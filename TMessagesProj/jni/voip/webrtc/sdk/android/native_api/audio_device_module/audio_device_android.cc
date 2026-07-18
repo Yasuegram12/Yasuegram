@@ -21,8 +21,8 @@
 #include "rtc_base/ref_count.h"
 
 #if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
-#include "sdk/android/src/jni/audio_device/aaudio_player.h"
-#include "sdk/android/src/jni/audio_device/aaudio_recorder.h"
+#include "modules/audio_device/android/aaudio_player.h"
+#include "modules/audio_device/android/aaudio_recorder.h"
 #endif
 
 #include "sdk/android/native_api/jni/application_context_provider.h"
@@ -70,8 +70,8 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAAudioAudioDeviceModule(
       AudioDeviceModule::kAndroidAAudioAudio, false /* use_stereo_input */,
       false /* use_stereo_output */,
       jni::kLowLatencyModeDelayEstimateInMilliseconds,
-      std::make_unique<jni::AAudioRecorder>(input_parameters),
-      std::make_unique<jni::AAudioPlayer>(output_parameters));
+      std::make_unique<AAudioRecorder>(input_parameters),
+      std::make_unique<AAudioPlayer>(output_parameters));
 }
 
 rtc::scoped_refptr<AudioDeviceModule>
@@ -96,7 +96,7 @@ CreateJavaInputAndAAudioOutputAudioDeviceModule(JNIEnv* env,
       AudioDeviceModule::kAndroidJavaInputAndOpenSLESOutputAudio,
       false /* use_stereo_input */, false /* use_stereo_output */,
       jni::kLowLatencyModeDelayEstimateInMilliseconds, std::move(audio_input),
-      std::make_unique<jni::AAudioPlayer>(output_parameters));
+      std::make_unique<AAudioPlayer>(output_parameters));
 }
 #endif
 
