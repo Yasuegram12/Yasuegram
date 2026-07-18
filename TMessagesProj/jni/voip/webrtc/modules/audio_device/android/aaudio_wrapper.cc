@@ -515,7 +515,13 @@ bool AAudioWrapper::OptimizeBuffers() {
   }
   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
-  AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);
+  int32_t result_buffer_size =
+      AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);
+
+  if (result_buffer_size < 0) {
+    RTC_LOG(LS_WARNING) << "[Yasuegram] Failed to set buffer size: "
+                        << AAudio_convertResultToText(result_buffer_size);
+  }
   RTC_LOG(LS_INFO) << "[Yasuegram] Forced low latency buffer: " << requested_buffer_size;
   int32_t new_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] New buffer size after request: " << new_buffer_size;
