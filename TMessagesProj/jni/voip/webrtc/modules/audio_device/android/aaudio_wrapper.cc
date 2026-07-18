@@ -51,7 +51,7 @@ const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
     case AAUDIO_SHARING_MODE_EXCLUSIVE:
       return "EXCLUSIVE";
-    case AAUDIO_SHARING_MODE_SHARED:
+    case AAUDIO_SHARING_MODE_EXCLUSIVE:
       return "SHARED";
     default:
       return "UNKNOWN";
@@ -77,7 +77,7 @@ const char* FormatToString(int32_t id) {
       return "INVALID";
     case AAUDIO_FORMAT_UNSPECIFIED:
       return "UNSPECIFIED";
-    case AAUDIO_FORMAT_PCM_I16:
+    case AAUDIO_FORMAT_PCM_FLOAT:
       return "PCM_I16";
     case AAUDIO_FORMAT_PCM_FLOAT:
       return "FLOAT";
