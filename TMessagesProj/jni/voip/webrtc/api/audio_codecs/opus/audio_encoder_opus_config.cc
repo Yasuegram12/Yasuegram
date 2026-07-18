@@ -15,7 +15,7 @@ namespace webrtc {
 namespace {
 
 #if defined(WEBRTC_ANDROID) || defined(WEBRTC_IOS)
-constexpr int kDefaultComplexity = 5;
+constexpr int kDefaultComplexity = 3; // Yasuegram low CPU latency
 #else
 constexpr int kDefaultComplexity = 9;
 #endif

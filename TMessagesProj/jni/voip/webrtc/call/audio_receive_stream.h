@@ -125,8 +125,8 @@ class AudioReceiveStreamInterface : public MediaReceiveStreamInterface {
     Transport* rtcp_send_transport = nullptr;
 
     // NetEq settings.
-    size_t jitter_buffer_max_packets = 200;
-    bool jitter_buffer_fast_accelerate = false;
+    size_t jitter_buffer_max_packets = 20;
+    bool jitter_buffer_fast_accelerate = true;
     int jitter_buffer_min_delay_ms = 0;
 
     // Identifier for an A/V synchronization group. Empty string to disable.
