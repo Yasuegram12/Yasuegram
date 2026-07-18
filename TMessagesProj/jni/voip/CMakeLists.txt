@@ -1004,7 +1004,6 @@ add_library(tgcalls STATIC
         voip/webrtc/modules/audio_device/audio_device_data_observer.cc
         voip/webrtc/modules/audio_device/audio_device_generic.cc
         voip/webrtc/modules/audio_device/audio_device_impl.cc
-        voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
         voip/webrtc/modules/audio_device/audio_device_name.cc
         voip/webrtc/modules/audio_device/dummy/audio_device_dummy.cc
         voip/webrtc/modules/audio_device/dummy/file_audio_device.cc
@@ -1992,8 +1991,6 @@ add_library(voipandroid STATIC
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_common.cc
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_player.cc
         voip/webrtc/sdk/android/src/jni/audio_device/opensles_recorder.cc
-        voip/webrtc/modules/audio_device/android/aaudio_player.cc
-        voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
         voip/webrtc/sdk/android/src/jni/video_decoder_fallback.cc
         voip/webrtc/sdk/android/src/jni/android_video_track_source.cc
         voip/webrtc/sdk/android/src/jni/software_video_encoder_factory.cc

@@ -19,7 +19,7 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/ref_count.h"
 
-#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if 1 // FORCE_AAUDIO
 #include "sdk/android/src/jni/audio_device/aaudio_player.h"
 #include "sdk/android/src/jni/audio_device/aaudio_recorder.h"
 #endif
@@ -54,7 +54,7 @@ void GetDefaultAudioParameters(JNIEnv* env,
 
 }  // namespace
 
-#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if 1 // FORCE_AAUDIO
 rtc::scoped_refptr<AudioDeviceModule> CreateAAudioAudioDeviceModule(
     JNIEnv* env,
     jobject application_context) {
@@ -185,9 +185,9 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
   auto j_context = webrtc::GetAppContext(env);
   // Select best possible combination of audio layers.
   if (audio_layer == AudioDeviceModule::kPlatformDefaultAudio) {
-#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if 1 // FORCE_AAUDIO
     // AAudio based audio for both input and output.
-    audio_layer = AudioDeviceModule::kAndroidOpenSLESAudio;
+    audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
 #else
     if (jni::IsLowLatencyInputSupported(env, j_context) &&
         jni::IsLowLatencyOutputSupported(env, j_context)) {
@@ -218,7 +218,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
       // time support for HW AEC using the AudioRecord Java API.
       return CreateJavaInputAndOpenSLESOutputAudioDeviceModule(
         env, j_context.obj());
-#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if 1 // FORCE_AAUDIO
     case AudioDeviceModule::kAndroidAAudioAudio:
       // AAudio based audio for both input and output.
       return CreateAAudioAudioDeviceModule(env, j_context.obj());

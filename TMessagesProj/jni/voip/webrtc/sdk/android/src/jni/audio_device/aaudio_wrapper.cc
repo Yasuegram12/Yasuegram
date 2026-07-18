@@ -80,7 +80,7 @@ const char* FormatToString(int32_t id) {
       return "UNSPECIFIED";
     case AAUDIO_FORMAT_PCM_I16:
       return "PCM_I16";
-    case AAUDIO_FORMAT_PCM_FLOAT:
+    case AAUDIO_FORMAT_PCM_I16:
       return "FLOAT";
     default:
       return "UNKNOWN";
