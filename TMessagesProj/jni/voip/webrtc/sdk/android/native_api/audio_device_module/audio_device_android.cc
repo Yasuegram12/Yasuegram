@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <android/api-level.h>
 #include "sdk/android/native_api/audio_device_module/audio_device_android.h"
 
 #include <stdlib.h>
@@ -21,9 +20,8 @@
 #include "rtc_base/ref_count.h"
 
 #if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
-#include "modules/audio_device/android/aaudio_player.h"
-#include "modules/audio_device/android/aaudio_recorder.h"
-#include "modules/audio_device/android/audio_manager.h"
+#include "sdk/android/src/jni/audio_device/aaudio_player.h"
+#include "sdk/android/src/jni/audio_device/aaudio_recorder.h"
 #endif
 
 #include "sdk/android/native_api/jni/application_context_provider.h"
@@ -66,18 +64,13 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAAudioAudioDeviceModule(
   AudioParameters output_parameters;
   GetDefaultAudioParameters(env, application_context, &input_parameters,
                             &output_parameters);
-  const JavaParamRef<jobject> j_context(application_context);
-  const ScopedJavaLocalRef<jobject> j_audio_manager =
-      jni::GetAudioManager(env, j_context);
-  auto audio_manager = std::make_unique<AudioManager>();
-
   // Create ADM from AAudioRecorder and AAudioPlayer.
   return CreateAudioDeviceModuleFromInputAndOutput(
       AudioDeviceModule::kAndroidAAudioAudio, false /* use_stereo_input */,
       false /* use_stereo_output */,
       jni::kLowLatencyModeDelayEstimateInMilliseconds,
-      std::make_unique<AAudioRecorder>(audio_manager.get()),
-      std::make_unique<AAudioPlayer>(audio_manager.get()));
+      std::make_unique<jni::AAudioRecorder>(input_parameters),
+      std::make_unique<jni::AAudioPlayer>(output_parameters));
 }
 
 rtc::scoped_refptr<AudioDeviceModule>
@@ -102,11 +95,7 @@ CreateJavaInputAndAAudioOutputAudioDeviceModule(JNIEnv* env,
       AudioDeviceModule::kAndroidJavaInputAndOpenSLESOutputAudio,
       false /* use_stereo_input */, false /* use_stereo_output */,
       jni::kLowLatencyModeDelayEstimateInMilliseconds, std::move(audio_input),
-      std::make_unique<jni::AudioTrackJni>(
-          env,
-          output_parameters,
-          jni::AudioTrackJni::CreateJavaWebRtcAudioTrack(
-              env, j_context, j_audio_manager)));
+      std::make_unique<jni::AAudioPlayer>(output_parameters));
 }
 #endif
 
@@ -198,13 +187,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
   if (audio_layer == AudioDeviceModule::kPlatformDefaultAudio) {
 #if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
     // AAudio based audio for both input and output.
-    if (android_get_device_api_level() >= 26) {
-      audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
-    } else if (jni::IsLowLatencyInputSupported(env, j_context) && jni::IsLowLatencyOutputSupported(env, j_context)) {
-      audio_layer = AudioDeviceModule::kAndroidOpenSLESAudio;
-    } else {
-      audio_layer = AudioDeviceModule::kAndroidJavaAudio;
-    }
+    audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
 #else
     if (jni::IsLowLatencyInputSupported(env, j_context) &&
         jni::IsLowLatencyOutputSupported(env, j_context)) {
