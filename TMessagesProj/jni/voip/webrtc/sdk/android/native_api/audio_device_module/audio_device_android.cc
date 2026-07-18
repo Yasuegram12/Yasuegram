@@ -65,6 +65,11 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAAudioAudioDeviceModule(
   AudioParameters output_parameters;
   GetDefaultAudioParameters(env, application_context, &input_parameters,
                             &output_parameters);
+  const JavaParamRef<jobject> j_context(application_context);
+  const ScopedJavaLocalRef<jobject> j_audio_manager =
+      jni::GetAudioManager(env, j_context);
+  auto* audio_manager = jni::GetAudioManager(env, j_context).obj();
+
   // Create ADM from AAudioRecorder and AAudioPlayer.
   return CreateAudioDeviceModuleFromInputAndOutput(
       AudioDeviceModule::kAndroidAAudioAudio, false /* use_stereo_input */,
