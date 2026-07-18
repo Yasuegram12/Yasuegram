@@ -187,7 +187,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
   if (audio_layer == AudioDeviceModule::kPlatformDefaultAudio) {
 #if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
     // AAudio based audio for both input and output.
-    audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
+    audio_layer = AudioDeviceModule::kAndroidOpenSLESAudio;
 #else
     if (jni::IsLowLatencyInputSupported(env, j_context) &&
         jni::IsLowLatencyOutputSupported(env, j_context)) {
