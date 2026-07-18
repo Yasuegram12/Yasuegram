@@ -262,9 +262,16 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
   // Avoid growing buffer too much after underruns.
   buffer_size += frames_per_burst();
 
-  // Keep latency target between 64 and 128 frames.
-  if (buffer_size > 128) {
-    buffer_size = 128;
+  // Yasuegram adaptive latency buffer:
+  // Allow only up to two device bursts.
+  const int32_t max_low_latency_buffer = frames_per_burst() * 2;
+
+  if (buffer_size > max_low_latency_buffer) {
+    buffer_size = max_low_latency_buffer;
+  }
+
+  if (buffer_size < 32) {
+    buffer_size = 32;
   }
 
   const int32_t max_buffer_size = buffer_capacity_in_frames();
@@ -510,8 +517,12 @@ bool AAudioWrapper::OptimizeBuffers() {
     requested_buffer_size = 32;
   }
 
-  if (requested_buffer_size > 64) {
-    requested_buffer_size = 64;
+  // Yasuegram adaptive initial buffer:
+  // Follow device burst size instead of fixed value.
+  const int32_t max_initial_buffer = frames_per_burst_ * 2;
+
+  if (requested_buffer_size > max_initial_buffer) {
+    requested_buffer_size = max_initial_buffer;
   }
   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
