@@ -187,7 +187,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
   if (audio_layer == AudioDeviceModule::kPlatformDefaultAudio) {
 #if 1 // FORCE_AAUDIO
     // AAudio based audio for both input and output.
-    audio_layer = AudioDeviceModule::kAndroidJavaInputAndAAudioOutputAudio;
+    audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
 #else
     if (jni::IsLowLatencyInputSupported(env, j_context) &&
         jni::IsLowLatencyOutputSupported(env, j_context)) {
@@ -222,7 +222,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
     case AudioDeviceModule::kAndroidAAudioAudio:
       // AAudio based audio for both input and output.
       return CreateAAudioAudioDeviceModule(env, j_context.obj());
-    case AudioDeviceModule::kAndroidJavaInputAndAAudioOutputAudio:
+    case AudioDeviceModule::kAndroidAAudioAudio:
       // Java audio for input and AAudio for output audio (i.e. mixed APIs).
       return CreateJavaInputAndAAudioOutputAudioDeviceModule(
         env, j_context.obj());

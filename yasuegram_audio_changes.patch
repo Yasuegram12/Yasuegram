@@ -1,0 +1,673 @@
+diff --git a/TMessagesProj/jni/voip/tgcalls/MediaManager.cpp b/TMessagesProj/jni/voip/tgcalls/MediaManager.cpp
+index 1b0bbc24..b38819ff 100644
+--- a/TMessagesProj/jni/voip/tgcalls/MediaManager.cpp
++++ b/TMessagesProj/jni/voip/tgcalls/MediaManager.cpp
+@@ -368,8 +368,8 @@ _platformContext(platformContext) {
+         audioOptions.auto_gain_control = false;
+ 
+         // ULTRA LOW LATENCY JITTER BUFFER
+-        audioOptions.audio_jitter_buffer_fast_accelerate = true;
+-        audioOptions.audio_jitter_buffer_min_delay_ms = 0;
++        audioOptions.audio_jitter_buffer_fast_accelerate = false;
++        audioOptions.audio_jitter_buffer_min_delay_ms = 10;
+         audioOptions.audio_jitter_buffer_max_packets = 1;
+ 
+         std::vector<std::string> streamIds;
+diff --git a/TMessagesProj/jni/voip/tgcalls/group/GroupInstanceCustomImpl.cpp b/TMessagesProj/jni/voip/tgcalls/group/GroupInstanceCustomImpl.cpp
+index 590eb0d6..53deae46 100644
+--- a/TMessagesProj/jni/voip/tgcalls/group/GroupInstanceCustomImpl.cpp
++++ b/TMessagesProj/jni/voip/tgcalls/group/GroupInstanceCustomImpl.cpp
+@@ -1396,7 +1396,7 @@ public:
+         threads->getWorkerThread()->BlockingCall([this, rtpTransport, ssrc, onAudioFrame = std::move(onAudioFrame), onAudioLevelUpdated = std::move(onAudioLevelUpdated), isRawPcm, userId, e2eEncryptDecrypt, payloadTypeMapping, setAudioLevelAndSpeech]() mutable {
+             cricket::AudioOptions audioOptions;
+             audioOptions.audio_jitter_buffer_fast_accelerate = true;
+-            audioOptions.audio_jitter_buffer_min_delay_ms = 0; // Yasuegram ultra low latency
++            audioOptions.audio_jitter_buffer_min_delay_ms = 10; // Yasuegram ultra low latency
+ 
+             std::string streamId = std::string("stream") + ssrc.name();
+ 
+diff --git a/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.h b/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.h
+index cfb07f07..f5fb2807 100644
+--- a/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.h
++++ b/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.h
+@@ -258,12 +258,12 @@ class AudioDeviceIOS : public AudioDeviceGeneric,
+   // of directly with the AudioDeviceBuffer one can ask for any number of
+   // audio data samples. Is also supports a similar scheme for the recording
+   // side.
+-  // Example: native buffer size can be 128 audio frames at 16kHz sample rate.
+-  // WebRTC will provide 480 audio frames per 10ms but iOS asks for 128
+-  // in each callback (one every 8ms). This class can then ask for 128 and the
++  // Example: native buffer size can be 256 audio frames at 16kHz sample rate.
++  // WebRTC will provide 480 audio frames per 10ms but iOS asks for 256
++  // in each callback (one every 8ms). This class can then ask for 256 and the
+   // FineAudioBuffer will ask WebRTC for new data only when needed and also
+   // cache non-utilized audio between callbacks. On the recording side, iOS
+-  // can provide audio data frames of size 128 and these are accumulated until
++  // can provide audio data frames of size 256 and these are accumulated until
+   // enough data to supply one 10ms call exists. This 10ms chunk is then sent
+   // to WebRTC and the remaining part is stored.
+   std::unique_ptr<FineAudioBuffer> fine_audio_buffer_;
+diff --git a/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.mm b/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.mm
+index 60045e06..e81a0d87 100644
+--- a/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.mm
++++ b/TMessagesProj/jni/voip/tgcalls/platform/darwin/iOS/tgcalls_audio_device_ios.mm
+@@ -759,8 +759,8 @@ void AudioDeviceIOS::SetupAudioBuffersForActiveAudioSession() {
+   // At this stage, we also know the exact IO buffer duration and can add
+   // that info to the existing audio parameters where it is converted into
+   // number of audio frames.
+-  // Example: IO buffer size = 0.008 seconds <=> 128 audio frames at 16kHz.
+-  // Hence, 128 is the size we expect to see in upcoming render callbacks.
++  // Example: IO buffer size = 0.008 seconds <=> 256 audio frames at 16kHz.
++  // Hence, 256 is the size we expect to see in upcoming render callbacks.
+   playout_parameters_.reset(sample_rate, playout_parameters_.channels(), io_buffer_duration);
+   RTC_DCHECK(playout_parameters_.is_complete());
+   record_parameters_.reset(sample_rate, record_parameters_.channels(), io_buffer_duration);
+diff --git a/TMessagesProj/jni/voip/tgcalls/v2/InstanceV2Impl.cpp b/TMessagesProj/jni/voip/tgcalls/v2/InstanceV2Impl.cpp
+index 892a0493..d3823d50 100644
+--- a/TMessagesProj/jni/voip/tgcalls/v2/InstanceV2Impl.cpp
++++ b/TMessagesProj/jni/voip/tgcalls/v2/InstanceV2Impl.cpp
+@@ -336,7 +336,7 @@ public:
+ 
+         cricket::AudioOptions audioOptions;
+         audioOptions.audio_jitter_buffer_fast_accelerate = true;
+-        audioOptions.audio_jitter_buffer_min_delay_ms = 0; // Yasuegram ultra low latency
++        audioOptions.audio_jitter_buffer_min_delay_ms = 10; // Yasuegram ultra low latency
+ 
+         const auto streamId = std::to_string(_ssrc);
+ 
+diff --git a/TMessagesProj/jni/voip/webrtc/absl/strings/internal/str_format/float_conversion.cc b/TMessagesProj/jni/voip/webrtc/absl/strings/internal/str_format/float_conversion.cc
+index aa319980..22b1bf39 100644
+--- a/TMessagesProj/jni/voip/webrtc/absl/strings/internal/str_format/float_conversion.cc
++++ b/TMessagesProj/jni/voip/webrtc/absl/strings/internal/str_format/float_conversion.cc
+@@ -29,7 +29,7 @@
+ #include "absl/functional/function_ref.h"
+ #include "absl/meta/type_traits.h"
+ #include "absl/numeric/bits.h"
+-#include "absl/numeric/int128.h"
++#include "absl/numeric/int256.h"
+ #include "absl/numeric/internal/representation.h"
+ #include "absl/strings/numbers.h"
+ #include "absl/types/optional.h"
+@@ -96,7 +96,7 @@ class StackArray {
+ // Requires: `0 <= carry <= 9`
+ template <typename Int>
+ inline char MultiplyBy10WithCarry(Int* v, char carry) {
+-  using BiggerInt = absl::conditional_t<sizeof(Int) == 4, uint64_t, uint128>;
++  using BiggerInt = absl::conditional_t<sizeof(Int) == 4, uint64_t, uint256>;
+   BiggerInt tmp =
+       10 * static_cast<BiggerInt>(*v) + static_cast<BiggerInt>(carry);
+   *v = static_cast<Int>(tmp);
+@@ -130,16 +130,16 @@ using MaxFloatType =
+ // Requires `0 <= exp` and `exp <= numeric_limits<MaxFloatType>::max_exponent`.
+ class BinaryToDecimal {
+   static constexpr size_t ChunksNeeded(int exp) {
+-    // We will left shift a uint128 by `exp` bits, so we need `128+exp` total
++    // We will left shift a uint256 by `exp` bits, so we need `256+exp` total
+     // bits. Round up to 32.
+     // See constructor for details about adding `10%` to the value.
+-    return static_cast<size_t>((128 + exp + 31) / 32 * 11 / 10);
++    return static_cast<size_t>((256 + exp + 31) / 32 * 11 / 10);
+   }
+ 
+  public:
+   // Run the conversion for `v * 2^exp` and call `f(binary_to_decimal)`.
+   // This function will allocate enough stack space to perform the conversion.
+-  static void RunConversion(uint128 v, int exp,
++  static void RunConversion(uint256 v, int exp,
+                             absl::FunctionRef<void(BinaryToDecimal)> f) {
+     assert(exp > 0);
+     assert(exp <= std::numeric_limits<MaxFloatType>::max_exponent);
+@@ -176,7 +176,7 @@ class BinaryToDecimal {
+   }
+ 
+  private:
+-  BinaryToDecimal(absl::Span<uint32_t> data, uint128 v, int exp) : data_(data) {
++  BinaryToDecimal(absl::Span<uint32_t> data, uint256 v, int exp) : data_(data) {
+     // We need to print the digits directly into the sink object without
+     // buffering them all first. To do this we need two things:
+     // - to know the total number of digits to do padding when necessary
+@@ -249,12 +249,12 @@ class FractionalDigitGenerator {
+   // Run the conversion for `v * 2^exp` and call `f(generator)`.
+   // This function will allocate enough stack space to perform the conversion.
+   static void RunConversion(
+-      uint128 v, int exp, absl::FunctionRef<void(FractionalDigitGenerator)> f) {
++      uint256 v, int exp, absl::FunctionRef<void(FractionalDigitGenerator)> f) {
+     using Limits = std::numeric_limits<MaxFloatType>;
+     assert(-exp < 0);
+-    assert(-exp >= Limits::min_exponent - 128);
++    assert(-exp >= Limits::min_exponent - 256);
+     static_assert(StackArray::kMaxCapacity >=
+-                      (Limits::digits + 128 - Limits::min_exponent + 31) / 32,
++                      (Limits::digits + 256 - Limits::min_exponent + 31) / 32,
+                   "");
+     StackArray::RunWithCapacity(
+         static_cast<size_t>((Limits::digits + exp + 31) / 32),
+@@ -308,7 +308,7 @@ class FractionalDigitGenerator {
+     return carry;
+   }
+ 
+-  FractionalDigitGenerator(absl::Span<uint32_t> data, uint128 v, int exp)
++  FractionalDigitGenerator(absl::Span<uint32_t> data, uint256 v, int exp)
+       : after_chunk_index_(static_cast<size_t>(exp / 32 + 1)), data_(data) {
+     const int offset = exp % 32;
+     // Right shift `v` by `exp` bits.
+@@ -330,7 +330,7 @@ class FractionalDigitGenerator {
+ 
+ // Count the number of leading zero bits.
+ int LeadingZeros(uint64_t v) { return countl_zero(v); }
+-int LeadingZeros(uint128 v) {
++int LeadingZeros(uint256 v) {
+   auto high = static_cast<uint64_t>(v >> 64);
+   auto low = static_cast<uint64_t>(v);
+   return high != 0 ? countl_zero(high) : 64 + countl_zero(low);
+@@ -363,9 +363,9 @@ char *PrintIntegralDigitsFromRightFast(uint64_t v, char *p) {
+   return p;
+ }
+ 
+-// Simple integral decimal digit printing for values that fit in 128-bits.
++// Simple integral decimal digit printing for values that fit in 256-bits.
+ // Returns the pointer to the last written digit.
+-char *PrintIntegralDigitsFromRightFast(uint128 v, char *p) {
++char *PrintIntegralDigitsFromRightFast(uint256 v, char *p) {
+   auto high = static_cast<uint64_t>(v >> 64);
+   auto low = static_cast<uint64_t>(v);
+ 
+@@ -406,16 +406,16 @@ char* PrintFractionalDigitsFast(uint64_t v,
+   return p;
+ }
+ 
+-// Simple fractional decimal digit printing for values that fir in 128-bits
++// Simple fractional decimal digit printing for values that fir in 256-bits
+ // after shifting.
+ // Performs rounding if necessary to fit within `precision`.
+ // Returns the pointer to one after the last character written.
+-char* PrintFractionalDigitsFast(uint128 v,
++char* PrintFractionalDigitsFast(uint256 v,
+                                 char* start,
+                                 int exp,
+                                 size_t precision) {
+   char *p = start;
+-  v <<= (128 - exp);
++  v <<= (256 - exp);
+   auto high = static_cast<uint64_t>(v >> 64);
+   auto low = static_cast<uint64_t>(v);
+ 
+@@ -522,8 +522,8 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
+ 
+   static constexpr size_t integral_size =
+       /* in case we need to round up an extra digit */ 1 +
+-      /* decimal digits for uint128 */ 40 + 1;
+-  char buffer[integral_size + /* . */ 1 + /* max digits uint128 */ 128];
++      /* decimal digits for uint256 */ 40 + 1;
++  char buffer[integral_size + /* . */ 1 + /* max digits uint256 */ 256];
+   buffer[integral_size] = '.';
+   char *const integral_digits_end = buffer + integral_size;
+   char *integral_digits_start;
+@@ -536,7 +536,7 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
+         total_bits <= 64
+             ? PrintIntegralDigitsFromRightFast(static_cast<uint64_t>(v) << exp,
+                                                integral_digits_end)
+-            : PrintIntegralDigitsFromRightFast(static_cast<uint128>(v) << exp,
++            : PrintIntegralDigitsFromRightFast(static_cast<uint256>(v) << exp,
+                                                integral_digits_end);
+   } else {
+     exp = -exp;
+@@ -550,7 +550,7 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
+     fractional_digits_end =
+         exp <= 64 ? PrintFractionalDigitsFast(v, fractional_digits_start, exp,
+                                               state.precision)
+-                  : PrintFractionalDigitsFast(static_cast<uint128>(v),
++                  : PrintFractionalDigitsFast(static_cast<uint256>(v),
+                                               fractional_digits_start, exp,
+                                               state.precision);
+     // There was a carry, so include the first digit too.
+@@ -570,12 +570,12 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
+              /*data_postfix=*/"");
+ }
+ 
+-// Slow %f formatter for when the shifted value does not fit in a uint128, and
++// Slow %f formatter for when the shifted value does not fit in a uint256, and
+ // `exp > 0`.
+ // Prints `v*2^exp` with the options from `state`.
+ // This one is guaranteed to not have fractional digits, so we don't have to
+ // worry about anything after the `.`.
+-void FormatFPositiveExpSlow(uint128 v, int exp, const FormatState &state) {
++void FormatFPositiveExpSlow(uint256 v, int exp, const FormatState &state) {
+   BinaryToDecimal::RunConversion(v, exp, [&](BinaryToDecimal btd) {
+     const size_t total_digits =
+         btd.TotalDigits() + (state.ShouldPrintDot() ? state.precision + 1 : 0);
+@@ -599,12 +599,12 @@ void FormatFPositiveExpSlow(uint128 v, int exp, const FormatState &state) {
+   });
+ }
+ 
+-// Slow %f formatter for when the shifted value does not fit in a uint128, and
++// Slow %f formatter for when the shifted value does not fit in a uint256, and
+ // `exp < 0`.
+ // Prints `v*2^exp` with the options from `state`.
+ // This one is guaranteed to be < 1.0, so we don't have to worry about integral
+ // digits.
+-void FormatFNegativeExpSlow(uint128 v, int exp, const FormatState &state) {
++void FormatFNegativeExpSlow(uint256 v, int exp, const FormatState &state) {
+   const size_t total_digits =
+       /* 0 */ 1 + (state.ShouldPrintDot() ? state.precision + 1 : 0);
+   auto padding =
+@@ -681,14 +681,14 @@ void FormatF(Int mantissa, int exp, const FormatState &state) {
+         static_cast<int>(sizeof(Int) * 8) - LeadingZeros(mantissa) + exp;
+ 
+     // Fallback to the slow stack-based approach if we can't do it in a 64 or
+-    // 128 bit state.
+-    if (ABSL_PREDICT_FALSE(total_bits > 128)) {
++    // 256 bit state.
++    if (ABSL_PREDICT_FALSE(total_bits > 256)) {
+       return FormatFPositiveExpSlow(mantissa, exp, state);
+     }
+   } else {
+     // Fallback to the slow stack-based approach if we can't do it in a 64 or
+-    // 128 bit state.
+-    if (ABSL_PREDICT_FALSE(exp < -128)) {
++    // 256 bit state.
++    if (ABSL_PREDICT_FALSE(exp < -256)) {
+       return FormatFNegativeExpSlow(mantissa, -exp, state);
+     }
+   }
+@@ -992,8 +992,8 @@ bool FallbackToSnprintf(const Float v, const FormatConversionSpecImpl &conv,
+   return true;
+ }
+ 
+-// 128-bits in decimal: ceil(128*log(2)/log(10))
+-//   or std::numeric_limits<__uint128_t>::digits10
++// 256-bits in decimal: ceil(256*log(2)/log(10))
++//   or std::numeric_limits<__uint256_t>::digits10
+ constexpr size_t kMaxFixedPrecision = 39;
+ 
+ constexpr size_t kBufferLength = /*sign*/ 1 +
+@@ -1115,7 +1115,7 @@ constexpr bool CanFitMantissa() {
+ template <typename Float>
+ struct Decomposed {
+   using MantissaType =
+-      absl::conditional_t<std::is_same<long double, Float>::value, uint128,
++      absl::conditional_t<std::is_same<long double, Float>::value, uint256,
+                           uint64_t>;
+   static_assert(std::numeric_limits<Float>::digits <= sizeof(MantissaType) * 8,
+                 "");
+@@ -1296,11 +1296,11 @@ bool FloatToBuffer(Decomposed<Float> decomposed,
+           precision, out, exp))
+     return true;
+ 
+-#if defined(ABSL_HAVE_INTRINSIC_INT128)
+-  // If that is not enough, try with __uint128_t.
+-  return CanFitMantissa<Float, __uint128_t>() &&
+-         FloatToBufferImpl<__uint128_t, Float, mode>(
+-             static_cast<__uint128_t>(decomposed.mantissa), decomposed.exponent,
++#if defined(ABSL_HAVE_INTRINSIC_INT256)
++  // If that is not enough, try with __uint256_t.
++  return CanFitMantissa<Float, __uint256_t>() &&
++         FloatToBufferImpl<__uint256_t, Float, mode>(
++             static_cast<__uint256_t>(decomposed.mantissa), decomposed.exponent,
+              precision, out, exp);
+ #endif
+   return false;
+diff --git a/TMessagesProj/jni/voip/webrtc/absl/strings/str_join_test.cc b/TMessagesProj/jni/voip/webrtc/absl/strings/str_join_test.cc
+index cd52e11d..5a4e5a16 100644
+--- a/TMessagesProj/jni/voip/webrtc/absl/strings/str_join_test.cc
++++ b/TMessagesProj/jni/voip/webrtc/absl/strings/str_join_test.cc
+@@ -478,7 +478,7 @@ TEST(StrJoin, Tuple) {
+             absl::StrJoin(std::make_tuple(x, std::cref(y), z), "-"));
+ 
+   struct TestFormatter {
+-    char buffer[128];
++    char buffer[256];
+     void operator()(std::string* out, int v) {
+       snprintf(buffer, sizeof(buffer), "%#.8x", v);
+       out->append(buffer);
+diff --git a/TMessagesProj/jni/voip/webrtc/api/video/i420_buffer.cc b/TMessagesProj/jni/voip/webrtc/api/video/i420_buffer.cc
+index bf7fc06e..86e82055 100644
+--- a/TMessagesProj/jni/voip/webrtc/api/video/i420_buffer.cc
++++ b/TMessagesProj/jni/voip/webrtc/api/video/i420_buffer.cc
+@@ -177,8 +177,8 @@ void I420Buffer::SetBlack(I420Buffer* buffer) {
+   RTC_CHECK(libyuv::I420Rect(buffer->MutableDataY(), buffer->StrideY(),
+                              buffer->MutableDataU(), buffer->StrideU(),
+                              buffer->MutableDataV(), buffer->StrideV(), 0, 0,
+-                             buffer->width(), buffer->height(), 0, 128,
+-                             128) == 0);
++                             buffer->width(), buffer->height(), 0, 256,
++                             256) == 0);
+ }
+ 
+ void I420Buffer::CropAndScaleFrom(const I420BufferInterface& src,
+diff --git a/TMessagesProj/jni/voip/webrtc/call/rtp_payload_params.h b/TMessagesProj/jni/voip/webrtc/call/rtp_payload_params.h
+index 5feee11a..7df40832 100644
+--- a/TMessagesProj/jni/voip/webrtc/call/rtp_payload_params.h
++++ b/TMessagesProj/jni/voip/webrtc/call/rtp_payload_params.h
+@@ -102,8 +102,8 @@ class RtpPayloadParams final {
+   std::array<std::array<int64_t, RtpGenericFrameDescriptor::kMaxTemporalLayers>,
+              RtpGenericFrameDescriptor::kMaxSpatialLayers>
+       last_shared_frame_id_;
+-  // circular buffer of frame ids for the last 128 vp9 pictures.
+-  // ids for the `picture_id` are stored at the index `picture_id % 128`.
++  // circular buffer of frame ids for the last 256 vp9 pictures.
++  // ids for the `picture_id` are stored at the index `picture_id % 256`.
+   std::vector<std::array<int64_t, RtpGenericFrameDescriptor::kMaxSpatialLayers>>
+       last_vp9_frame_id_;
+   // Last frame id for each chain
+diff --git a/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_player.cc b/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_player.cc
+index 4a97c4be..3bd19306 100644
+--- a/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_player.cc
++++ b/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_player.cc
+@@ -169,7 +169,7 @@ aaudio_data_callback_result_t AAudioPlayer::OnDataCallback(void* audio_data,
+   if (underrun_count > underrun_count_) {
+     RTC_LOG(LS_ERROR) << "Underrun detected: " << underrun_count;
+     underrun_count_ = underrun_count;
+-    aaudio_.IncreaseOutputBufferSize();
++    
+   }
+ 
+   // Estimate latency between writing an audio frame to the output stream and
+diff --git a/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc b/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
+index 5c42ec47..d7043f6a 100644
+--- a/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
++++ b/TMessagesProj/jni/voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
+@@ -51,7 +51,7 @@ const char* DirectionToString(aaudio_direction_t direction) {
+ 
+ const char* SharingModeToString(aaudio_sharing_mode_t mode) {
+   switch (mode) {
+-    case AAUDIO_SHARING_MODE_EXCLUSIVE:
++    case AAUDIO_SHARING_MODE_SHARED:
+       return "EXCLUSIVE";
+     case AAUDIO_SHARING_MODE_SHARED:
+       return "SHARED";
+@@ -79,7 +79,7 @@ const char* FormatToString(int32_t id) {
+       return "INVALID";
+     case AAUDIO_FORMAT_UNSPECIFIED:
+       return "UNSPECIFIED";
+-    case AAUDIO_FORMAT_PCM_I16:
++    case AAUDIO_FORMAT_PCM_FLOAT:
+       return "PCM_I16";
+     case AAUDIO_FORMAT_PCM_FLOAT:
+       return "FLOAT";
+@@ -108,7 +108,7 @@ aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
+   static bool priority_set = false;
+   if (!priority_set) {
+     struct sched_param param;
+-    param.sched_priority = 2;
++    param.sched_priority = 4;
+     int result = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
+     RTC_LOG(LS_INFO) << "[Yasuegram] Audio thread priority result: " << result;
+     priority_set = true;
+@@ -171,15 +171,18 @@ bool AAudioWrapper::Init() {
+   SetStreamConfiguration(builder.get());
+   // Opens a stream based on options in the stream builder.
+   if (!OpenStream(builder.get())) {
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   // Ensures that the opened stream could activate the requested settings.
+   if (!VerifyStreamConfiguration()) {
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   // Optimizes the buffer scheme for lowest possible latency and creates
+   // additional buffer logic to match the 10ms buffer size used in WebRTC.
+   if (!OptimizeBuffers()) {
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   LogStreamState();
+@@ -194,6 +197,7 @@ bool AAudioWrapper::Start() {
+   if (current_state != AAUDIO_STREAM_STATE_OPEN) {
+     RTC_LOG(LS_ERROR) << "Invalid state: "
+                       << AAudio_convertStreamStateToText(current_state);
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   // Asynchronous request for the stream to start.
+@@ -278,6 +282,7 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
+   if (buffer_size > max_buffer_size) {
+     RTC_LOG(LS_ERROR) << "Required buffer size (" << buffer_size
+                       << ") is higher than max: " << max_buffer_size;
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   RTC_LOG(LS_INFO) << "Updating buffer size to: " << buffer_size
+@@ -286,6 +291,7 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
+   if (buffer_size < 0) {
+     RTC_LOG(LS_ERROR) << "Failed to change buffer size: "
+                       << AAudio_convertResultToText(buffer_size);
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   RTC_LOG(LS_INFO) << "Buffer size changed to: " << buffer_size;
+@@ -387,7 +393,7 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
+   // Yasuegram ultra low latency thread tuning
+   pthread_t thread = pthread_self();
+   struct sched_param param;
+-  param.sched_priority = 2;
++  param.sched_priority = 4;
+   pthread_setschedparam(thread, SCHED_FIFO, &param);
+ 
+   RTC_DCHECK(builder);
+@@ -402,12 +408,13 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
+   AAudioStreamBuilder_setChannelCount(builder, audio_parameters().channels());
+   // Always use 16-bit PCM audio sample format.
+   AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_FLOAT);
+-  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_EXCLUSIVE.
++  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_SHARED.
+   // Ask for exclusive mode since this will give us the lowest possible latency.
+   // If exclusive mode isn't available, shared mode will be used instead.
+-  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_EXCLUSIVE);
++  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
+   // Use the direction that was given at construction.
+   AAudioStreamBuilder_setDirection(builder, direction_);
++  AAudioStreamBuilder_setUsage(builder, AAUDIO_USAGE_VOICE_COMMUNICATION);
+   // TODO(henrika): investigate performance using different performance modes.
+   AAudioStreamBuilder_setPerformanceMode(builder,
+                                          AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+@@ -476,33 +483,40 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
+   // TODO(henrika): should we verify device ID as well?
+   if (AAudioStream_getSampleRate(stream_) != audio_parameters().sample_rate()) {
+     RTC_LOG(LS_ERROR) << "Stream unable to use requested sample rate";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   if (AAudioStream_getChannelCount(stream_) !=
+       static_cast<int32_t>(audio_parameters().channels())) {
+     RTC_LOG(LS_ERROR) << "Stream unable to use requested channel count";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   if (AAudioStream_getFormat(stream_) != AAUDIO_FORMAT_PCM_FLOAT) {
+     RTC_LOG(LS_ERROR) << "Stream unable to use requested format";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+-  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_EXCLUSIVE) {
++  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_SHARED) {
+     RTC_LOG(LS_ERROR) << "Stream unable to use requested sharing mode";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   if (AAudioStream_getPerformanceMode(stream_) !=
+       AAUDIO_PERFORMANCE_MODE_LOW_LATENCY) {
+     RTC_LOG(LS_ERROR) << "Stream unable to use requested performance mode";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   if (AAudioStream_getDirection(stream_) != direction()) {
+     RTC_LOG(LS_ERROR) << "Stream direction could not be set";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   if (AAudioStream_getSamplesPerFrame(stream_) !=
+       static_cast<int32_t>(audio_parameters().channels())) {
+     RTC_LOG(LS_ERROR) << "Invalid number of samples per frame";
++    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
+     return false;
+   }
+   return true;
+diff --git a/TMessagesProj/jni/voip/webrtc/sdk/android/native_api/audio_device_module/audio_device_android.cc b/TMessagesProj/jni/voip/webrtc/sdk/android/native_api/audio_device_module/audio_device_android.cc
+index 1a47c67f..7b15e225 100644
+--- a/TMessagesProj/jni/voip/webrtc/sdk/android/native_api/audio_device_module/audio_device_android.cc
++++ b/TMessagesProj/jni/voip/webrtc/sdk/android/native_api/audio_device_module/audio_device_android.cc
+@@ -187,7 +187,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
+   if (audio_layer == AudioDeviceModule::kPlatformDefaultAudio) {
+ #if 1 // FORCE_AAUDIO
+     // AAudio based audio for both input and output.
+-    audio_layer = AudioDeviceModule::kAndroidJavaInputAndAAudioOutputAudio;
++    audio_layer = AudioDeviceModule::kAndroidAAudioAudio;
+ #else
+     if (jni::IsLowLatencyInputSupported(env, j_context) &&
+         jni::IsLowLatencyOutputSupported(env, j_context)) {
+@@ -222,7 +222,7 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
+     case AudioDeviceModule::kAndroidAAudioAudio:
+       // AAudio based audio for both input and output.
+       return CreateAAudioAudioDeviceModule(env, j_context.obj());
+-    case AudioDeviceModule::kAndroidJavaInputAndAAudioOutputAudio:
++    case AudioDeviceModule::kAndroidAAudioAudio:
+       // Java audio for input and AAudio for output audio (i.e. mixed APIs).
+       return CreateJavaInputAndAAudioOutputAudioDeviceModule(
+         env, j_context.obj());
+diff --git a/aaudio_wrapper.cc.backup2 b/aaudio_wrapper.cc.backup2
+index 8d3b7fdd..5c42ec47 100644
+--- a/aaudio_wrapper.cc.backup2
++++ b/aaudio_wrapper.cc.backup2
+@@ -9,6 +9,8 @@
+  */
+ 
+ #include "modules/audio_device/android/aaudio_wrapper.h"
++#include <pthread.h>
++#include <sched.h>
+ 
+ #include "modules/audio_device/android/audio_manager.h"
+ #include "rtc_base/logging.h"
+@@ -51,7 +53,7 @@ const char* SharingModeToString(aaudio_sharing_mode_t mode) {
+   switch (mode) {
+     case AAUDIO_SHARING_MODE_EXCLUSIVE:
+       return "EXCLUSIVE";
+-    case AAUDIO_SHARING_MODE_EXCLUSIVE:
++    case AAUDIO_SHARING_MODE_SHARED:
+       return "SHARED";
+     default:
+       return "UNKNOWN";
+@@ -77,7 +79,7 @@ const char* FormatToString(int32_t id) {
+       return "INVALID";
+     case AAUDIO_FORMAT_UNSPECIFIED:
+       return "UNSPECIFIED";
+-    case AAUDIO_FORMAT_PCM_FLOAT:
++    case AAUDIO_FORMAT_PCM_I16:
+       return "PCM_I16";
+     case AAUDIO_FORMAT_PCM_FLOAT:
+       return "FLOAT";
+@@ -101,6 +103,17 @@ aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
+                                            void* user_data,
+                                            void* audio_data,
+                                            int32_t num_frames) {
++
++  // Yasuegram audio callback priority tuning
++  static bool priority_set = false;
++  if (!priority_set) {
++    struct sched_param param;
++    param.sched_priority = 2;
++    int result = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
++    RTC_LOG(LS_INFO) << "[Yasuegram] Audio thread priority result: " << result;
++    priority_set = true;
++  }
++
+   RTC_DCHECK(user_data);
+   RTC_DCHECK(audio_data);
+   AAudioWrapper* aaudio_wrapper = reinterpret_cast<AAudioWrapper*>(user_data);
+@@ -249,9 +262,16 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
+   // Avoid growing buffer too much after underruns.
+   buffer_size += frames_per_burst();
+ 
+-  // Keep latency target between 64 and 128 frames.
+-  if (buffer_size > 128) {
+-    buffer_size = 128;
++  // Yasuegram adaptive latency buffer:
++  // Allow only up to two device bursts.
++  const int32_t max_low_latency_buffer = frames_per_burst() * 2;
++
++  if (buffer_size > max_low_latency_buffer) {
++    buffer_size = max_low_latency_buffer;
++  }
++
++  if (buffer_size < 32) {
++    buffer_size = 32;
+   }
+ 
+   const int32_t max_buffer_size = buffer_capacity_in_frames();
+@@ -363,6 +383,13 @@ int64_t AAudioWrapper::frames_read() const {
+ 
+ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
+   RTC_LOG(LS_INFO) << "SetStreamConfiguration";
++
++  // Yasuegram ultra low latency thread tuning
++  pthread_t thread = pthread_self();
++  struct sched_param param;
++  param.sched_priority = 2;
++  pthread_setschedparam(thread, SCHED_FIFO, &param);
++
+   RTC_DCHECK(builder);
+   RTC_DCHECK(thread_checker_.IsCurrent());
+   // Request usage of default primary output/input device.
+@@ -384,6 +411,10 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
+   // TODO(henrika): investigate performance using different performance modes.
+   AAudioStreamBuilder_setPerformanceMode(builder,
+                                          AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
++
++  // ULTRA BUFFER 128 FRAMES
++  // Request minimum possible audio buffer
++  
+   // Given that WebRTC applications require low latency, our audio stream uses
+   // an asynchronous callback function to transfer data to and from the
+   // application. AAudio executes the callback in a higher-priority thread that
+@@ -400,6 +431,13 @@ bool AAudioWrapper::OpenStream(AAudioStreamBuilder* builder) {
+   AAudioStream* stream = nullptr;
+   RETURN_ON_ERROR(AAudioStreamBuilder_openStream(builder, &stream), false);
+   stream_ = stream;
++
++  // ULTRA LOW LATENCY BUFFER MODE
++  int32_t burst = AAudioStream_getFramesPerBurst(stream_);
++  if (burst > 0) {
++    AAudioStream_setBufferSizeInFrames(stream_, burst);
++  }
++
+   LogStreamConfiguration();
+   return true;
+ }
+@@ -486,16 +524,20 @@ bool AAudioWrapper::OptimizeBuffers() {
+   // Yasuegram ultra low latency tuning
+   int32_t requested_buffer_size = frames_per_burst_;
+ 
+-  if (requested_buffer_size < 64) {
+-    requested_buffer_size = 64;
+-  }
++  // Keep native burst size for minimum latency
+ 
+-  if (requested_buffer_size > 128) {
+-    requested_buffer_size = 128;
+-  }
++  // Yasuegram adaptive initial buffer:
++  // Follow device burst size instead of fixed value.
++  // Do not enlarge initial buffer
+   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
+   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
+-  AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);
++  int32_t result_buffer_size =
++      AAudioStream_setBufferSizeInFrames(stream_, requested_buffer_size);
++
++  if (result_buffer_size < 0) {
++    RTC_LOG(LS_WARNING) << "[Yasuegram] Failed to set buffer size: "
++                        << AAudio_convertResultToText(result_buffer_size);
++  }
+   RTC_LOG(LS_INFO) << "[Yasuegram] Forced low latency buffer: " << requested_buffer_size;
+   int32_t new_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
+   RTC_LOG(LS_INFO) << "[Yasuegram] New buffer size after request: " << new_buffer_size;
+diff --git a/buildSrc/.gradle/8.7/executionHistory/executionHistory.bin b/buildSrc/.gradle/8.7/executionHistory/executionHistory.bin
+index ca69f119..557bc9a1 100644
+Binary files a/buildSrc/.gradle/8.7/executionHistory/executionHistory.bin and b/buildSrc/.gradle/8.7/executionHistory/executionHistory.bin differ
+diff --git a/buildSrc/.gradle/8.7/executionHistory/executionHistory.lock b/buildSrc/.gradle/8.7/executionHistory/executionHistory.lock
+index 7c666b0b..2747bd07 100644
+Binary files a/buildSrc/.gradle/8.7/executionHistory/executionHistory.lock and b/buildSrc/.gradle/8.7/executionHistory/executionHistory.lock differ
+diff --git a/buildSrc/.gradle/buildOutputCleanup/buildOutputCleanup.lock b/buildSrc/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+index 295edfff..8cc2bd4e 100644
+Binary files a/buildSrc/.gradle/buildOutputCleanup/buildOutputCleanup.lock and b/buildSrc/.gradle/buildOutputCleanup/buildOutputCleanup.lock differ

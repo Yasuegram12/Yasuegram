@@ -478,7 +478,7 @@ TEST(StrJoin, Tuple) {
             absl::StrJoin(std::make_tuple(x, std::cref(y), z), "-"));
 
   struct TestFormatter {
-    char buffer[128];
+    char buffer[256];
     void operator()(std::string* out, int v) {
       snprintf(buffer, sizeof(buffer), "%#.8x", v);
       out->append(buffer);

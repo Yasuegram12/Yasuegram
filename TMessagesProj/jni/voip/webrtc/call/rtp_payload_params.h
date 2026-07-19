@@ -102,8 +102,8 @@ class RtpPayloadParams final {
   std::array<std::array<int64_t, RtpGenericFrameDescriptor::kMaxTemporalLayers>,
              RtpGenericFrameDescriptor::kMaxSpatialLayers>
       last_shared_frame_id_;
-  // circular buffer of frame ids for the last 128 vp9 pictures.
-  // ids for the `picture_id` are stored at the index `picture_id % 128`.
+  // circular buffer of frame ids for the last 256 vp9 pictures.
+  // ids for the `picture_id` are stored at the index `picture_id % 256`.
   std::vector<std::array<int64_t, RtpGenericFrameDescriptor::kMaxSpatialLayers>>
       last_vp9_frame_id_;
   // Last frame id for each chain

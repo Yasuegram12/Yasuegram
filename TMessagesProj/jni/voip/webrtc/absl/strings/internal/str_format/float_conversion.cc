@@ -29,7 +29,7 @@
 #include "absl/functional/function_ref.h"
 #include "absl/meta/type_traits.h"
 #include "absl/numeric/bits.h"
-#include "absl/numeric/int128.h"
+#include "absl/numeric/int256.h"
 #include "absl/numeric/internal/representation.h"
 #include "absl/strings/numbers.h"
 #include "absl/types/optional.h"
@@ -96,7 +96,7 @@ class StackArray {
 // Requires: `0 <= carry <= 9`
 template <typename Int>
 inline char MultiplyBy10WithCarry(Int* v, char carry) {
-  using BiggerInt = absl::conditional_t<sizeof(Int) == 4, uint64_t, uint128>;
+  using BiggerInt = absl::conditional_t<sizeof(Int) == 4, uint64_t, uint256>;
   BiggerInt tmp =
       10 * static_cast<BiggerInt>(*v) + static_cast<BiggerInt>(carry);
   *v = static_cast<Int>(tmp);
@@ -130,16 +130,16 @@ using MaxFloatType =
 // Requires `0 <= exp` and `exp <= numeric_limits<MaxFloatType>::max_exponent`.
 class BinaryToDecimal {
   static constexpr size_t ChunksNeeded(int exp) {
-    // We will left shift a uint128 by `exp` bits, so we need `128+exp` total
+    // We will left shift a uint256 by `exp` bits, so we need `256+exp` total
     // bits. Round up to 32.
     // See constructor for details about adding `10%` to the value.
-    return static_cast<size_t>((128 + exp + 31) / 32 * 11 / 10);
+    return static_cast<size_t>((256 + exp + 31) / 32 * 11 / 10);
   }
 
  public:
   // Run the conversion for `v * 2^exp` and call `f(binary_to_decimal)`.
   // This function will allocate enough stack space to perform the conversion.
-  static void RunConversion(uint128 v, int exp,
+  static void RunConversion(uint256 v, int exp,
                             absl::FunctionRef<void(BinaryToDecimal)> f) {
     assert(exp > 0);
     assert(exp <= std::numeric_limits<MaxFloatType>::max_exponent);
@@ -176,7 +176,7 @@ class BinaryToDecimal {
   }
 
  private:
-  BinaryToDecimal(absl::Span<uint32_t> data, uint128 v, int exp) : data_(data) {
+  BinaryToDecimal(absl::Span<uint32_t> data, uint256 v, int exp) : data_(data) {
     // We need to print the digits directly into the sink object without
     // buffering them all first. To do this we need two things:
     // - to know the total number of digits to do padding when necessary
@@ -249,12 +249,12 @@ class FractionalDigitGenerator {
   // Run the conversion for `v * 2^exp` and call `f(generator)`.
   // This function will allocate enough stack space to perform the conversion.
   static void RunConversion(
-      uint128 v, int exp, absl::FunctionRef<void(FractionalDigitGenerator)> f) {
+      uint256 v, int exp, absl::FunctionRef<void(FractionalDigitGenerator)> f) {
     using Limits = std::numeric_limits<MaxFloatType>;
     assert(-exp < 0);
-    assert(-exp >= Limits::min_exponent - 128);
+    assert(-exp >= Limits::min_exponent - 256);
     static_assert(StackArray::kMaxCapacity >=
-                      (Limits::digits + 128 - Limits::min_exponent + 31) / 32,
+                      (Limits::digits + 256 - Limits::min_exponent + 31) / 32,
                   "");
     StackArray::RunWithCapacity(
         static_cast<size_t>((Limits::digits + exp + 31) / 32),
@@ -308,7 +308,7 @@ class FractionalDigitGenerator {
     return carry;
   }
 
-  FractionalDigitGenerator(absl::Span<uint32_t> data, uint128 v, int exp)
+  FractionalDigitGenerator(absl::Span<uint32_t> data, uint256 v, int exp)
       : after_chunk_index_(static_cast<size_t>(exp / 32 + 1)), data_(data) {
     const int offset = exp % 32;
     // Right shift `v` by `exp` bits.
@@ -330,7 +330,7 @@ class FractionalDigitGenerator {
 
 // Count the number of leading zero bits.
 int LeadingZeros(uint64_t v) { return countl_zero(v); }
-int LeadingZeros(uint128 v) {
+int LeadingZeros(uint256 v) {
   auto high = static_cast<uint64_t>(v >> 64);
   auto low = static_cast<uint64_t>(v);
   return high != 0 ? countl_zero(high) : 64 + countl_zero(low);
@@ -363,9 +363,9 @@ char *PrintIntegralDigitsFromRightFast(uint64_t v, char *p) {
   return p;
 }
 
-// Simple integral decimal digit printing for values that fit in 128-bits.
+// Simple integral decimal digit printing for values that fit in 256-bits.
 // Returns the pointer to the last written digit.
-char *PrintIntegralDigitsFromRightFast(uint128 v, char *p) {
+char *PrintIntegralDigitsFromRightFast(uint256 v, char *p) {
   auto high = static_cast<uint64_t>(v >> 64);
   auto low = static_cast<uint64_t>(v);
 
@@ -406,16 +406,16 @@ char* PrintFractionalDigitsFast(uint64_t v,
   return p;
 }
 
-// Simple fractional decimal digit printing for values that fir in 128-bits
+// Simple fractional decimal digit printing for values that fir in 256-bits
 // after shifting.
 // Performs rounding if necessary to fit within `precision`.
 // Returns the pointer to one after the last character written.
-char* PrintFractionalDigitsFast(uint128 v,
+char* PrintFractionalDigitsFast(uint256 v,
                                 char* start,
                                 int exp,
                                 size_t precision) {
   char *p = start;
-  v <<= (128 - exp);
+  v <<= (256 - exp);
   auto high = static_cast<uint64_t>(v >> 64);
   auto low = static_cast<uint64_t>(v);
 
@@ -522,8 +522,8 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
 
   static constexpr size_t integral_size =
       /* in case we need to round up an extra digit */ 1 +
-      /* decimal digits for uint128 */ 40 + 1;
-  char buffer[integral_size + /* . */ 1 + /* max digits uint128 */ 128];
+      /* decimal digits for uint256 */ 40 + 1;
+  char buffer[integral_size + /* . */ 1 + /* max digits uint256 */ 256];
   buffer[integral_size] = '.';
   char *const integral_digits_end = buffer + integral_size;
   char *integral_digits_start;
@@ -536,7 +536,7 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
         total_bits <= 64
             ? PrintIntegralDigitsFromRightFast(static_cast<uint64_t>(v) << exp,
                                                integral_digits_end)
-            : PrintIntegralDigitsFromRightFast(static_cast<uint128>(v) << exp,
+            : PrintIntegralDigitsFromRightFast(static_cast<uint256>(v) << exp,
                                                integral_digits_end);
   } else {
     exp = -exp;
@@ -550,7 +550,7 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
     fractional_digits_end =
         exp <= 64 ? PrintFractionalDigitsFast(v, fractional_digits_start, exp,
                                               state.precision)
-                  : PrintFractionalDigitsFast(static_cast<uint128>(v),
+                  : PrintFractionalDigitsFast(static_cast<uint256>(v),
                                               fractional_digits_start, exp,
                                               state.precision);
     // There was a carry, so include the first digit too.
@@ -570,12 +570,12 @@ void FormatFFast(Int v, int exp, const FormatState &state) {
              /*data_postfix=*/"");
 }
 
-// Slow %f formatter for when the shifted value does not fit in a uint128, and
+// Slow %f formatter for when the shifted value does not fit in a uint256, and
 // `exp > 0`.
 // Prints `v*2^exp` with the options from `state`.
 // This one is guaranteed to not have fractional digits, so we don't have to
 // worry about anything after the `.`.
-void FormatFPositiveExpSlow(uint128 v, int exp, const FormatState &state) {
+void FormatFPositiveExpSlow(uint256 v, int exp, const FormatState &state) {
   BinaryToDecimal::RunConversion(v, exp, [&](BinaryToDecimal btd) {
     const size_t total_digits =
         btd.TotalDigits() + (state.ShouldPrintDot() ? state.precision + 1 : 0);
@@ -599,12 +599,12 @@ void FormatFPositiveExpSlow(uint128 v, int exp, const FormatState &state) {
   });
 }
 
-// Slow %f formatter for when the shifted value does not fit in a uint128, and
+// Slow %f formatter for when the shifted value does not fit in a uint256, and
 // `exp < 0`.
 // Prints `v*2^exp` with the options from `state`.
 // This one is guaranteed to be < 1.0, so we don't have to worry about integral
 // digits.
-void FormatFNegativeExpSlow(uint128 v, int exp, const FormatState &state) {
+void FormatFNegativeExpSlow(uint256 v, int exp, const FormatState &state) {
   const size_t total_digits =
       /* 0 */ 1 + (state.ShouldPrintDot() ? state.precision + 1 : 0);
   auto padding =
@@ -681,14 +681,14 @@ void FormatF(Int mantissa, int exp, const FormatState &state) {
         static_cast<int>(sizeof(Int) * 8) - LeadingZeros(mantissa) + exp;
 
     // Fallback to the slow stack-based approach if we can't do it in a 64 or
-    // 128 bit state.
-    if (ABSL_PREDICT_FALSE(total_bits > 128)) {
+    // 256 bit state.
+    if (ABSL_PREDICT_FALSE(total_bits > 256)) {
       return FormatFPositiveExpSlow(mantissa, exp, state);
     }
   } else {
     // Fallback to the slow stack-based approach if we can't do it in a 64 or
-    // 128 bit state.
-    if (ABSL_PREDICT_FALSE(exp < -128)) {
+    // 256 bit state.
+    if (ABSL_PREDICT_FALSE(exp < -256)) {
       return FormatFNegativeExpSlow(mantissa, -exp, state);
     }
   }
@@ -992,8 +992,8 @@ bool FallbackToSnprintf(const Float v, const FormatConversionSpecImpl &conv,
   return true;
 }
 
-// 128-bits in decimal: ceil(128*log(2)/log(10))
-//   or std::numeric_limits<__uint128_t>::digits10
+// 256-bits in decimal: ceil(256*log(2)/log(10))
+//   or std::numeric_limits<__uint256_t>::digits10
 constexpr size_t kMaxFixedPrecision = 39;
 
 constexpr size_t kBufferLength = /*sign*/ 1 +
@@ -1115,7 +1115,7 @@ constexpr bool CanFitMantissa() {
 template <typename Float>
 struct Decomposed {
   using MantissaType =
-      absl::conditional_t<std::is_same<long double, Float>::value, uint128,
+      absl::conditional_t<std::is_same<long double, Float>::value, uint256,
                           uint64_t>;
   static_assert(std::numeric_limits<Float>::digits <= sizeof(MantissaType) * 8,
                 "");
@@ -1296,11 +1296,11 @@ bool FloatToBuffer(Decomposed<Float> decomposed,
           precision, out, exp))
     return true;
 
-#if defined(ABSL_HAVE_INTRINSIC_INT128)
-  // If that is not enough, try with __uint128_t.
-  return CanFitMantissa<Float, __uint128_t>() &&
-         FloatToBufferImpl<__uint128_t, Float, mode>(
-             static_cast<__uint128_t>(decomposed.mantissa), decomposed.exponent,
+#if defined(ABSL_HAVE_INTRINSIC_INT256)
+  // If that is not enough, try with __uint256_t.
+  return CanFitMantissa<Float, __uint256_t>() &&
+         FloatToBufferImpl<__uint256_t, Float, mode>(
+             static_cast<__uint256_t>(decomposed.mantissa), decomposed.exponent,
              precision, out, exp);
 #endif
   return false;

@@ -177,8 +177,8 @@ void I420Buffer::SetBlack(I420Buffer* buffer) {
   RTC_CHECK(libyuv::I420Rect(buffer->MutableDataY(), buffer->StrideY(),
                              buffer->MutableDataU(), buffer->StrideU(),
                              buffer->MutableDataV(), buffer->StrideV(), 0, 0,
-                             buffer->width(), buffer->height(), 0, 128,
-                             128) == 0);
+                             buffer->width(), buffer->height(), 0, 256,
+                             256) == 0);
 }
 
 void I420Buffer::CropAndScaleFrom(const I420BufferInterface& src,
