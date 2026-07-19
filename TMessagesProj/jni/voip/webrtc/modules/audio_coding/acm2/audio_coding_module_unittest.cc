@@ -1009,8 +1009,8 @@ TEST_F(AudioCodingModuleTestOldApi, SendingMultiChannelForMonoInput) {
   audio_format_ = SdpAudioFormat({"multiopus",
                                   kSampleRateHz,
                                   6,
-                                  {{"minptime", "10"},
-                                   {"useinbandfec", "1"},
+                                  {{"minptime", "5"},
+                                   {"useinbandfec", "0"},
                                    {"channel_mapping", "0,4,1,2,3,5"},
                                    {"num_streams", "4"},
                                    {"coupled_streams", "2"}}});
@@ -1035,8 +1035,8 @@ TEST_F(AudioCodingModuleTestOldApi, SendingMultiChannelForStereoInput) {
   audio_format_ = SdpAudioFormat({"multiopus",
                                   kSampleRateHz,
                                   6,
-                                  {{"minptime", "10"},
-                                   {"useinbandfec", "1"},
+                                  {{"minptime", "5"},
+                                   {"useinbandfec", "0"},
                                    {"channel_mapping", "0,4,1,2,3,5"},
                                    {"num_streams", "4"},
                                    {"coupled_streams", "2"}}});

@@ -437,7 +437,7 @@ void WebRtcVoiceEngine::Init() {
 #endif
     options.highpass_filter = false; // Yasuegram ultra low latency
     options.stereo_swapping = false;
-    options.audio_jitter_buffer_max_packets = 20; // Yasuegram low latency
+    options.audio_jitter_buffer_max_packets = 3; // Yasuegram low latency
     options.audio_jitter_buffer_fast_accelerate = true; // Yasuegram low latency
     options.audio_jitter_buffer_min_delay_ms = 0; // Yasuegram low latency // Yasuegram ultra low latency
     ApplyOptions(options);
@@ -580,7 +580,7 @@ void WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
 
   if (options.audio_jitter_buffer_max_packets) {
     audio_jitter_buffer_max_packets_ =
-        std::max(20, *options.audio_jitter_buffer_max_packets);
+        std::max(2, *options.audio_jitter_buffer_max_packets);
   }
   if (options.audio_jitter_buffer_fast_accelerate) {
     audio_jitter_buffer_fast_accelerate_ =
@@ -597,6 +597,14 @@ void WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
   }
 
   webrtc::AudioProcessing::Config apm_config = ap->GetConfig();
+
+  // ULTRA LOW LATENCY AUDIO MODE
+  apm_config.echo_cancellation.enabled = false;
+  apm_config.noise_suppression.enabled = false;
+  apm_config.high_pass_filter.enabled = false;
+  apm_config.gain_controller1.enabled = false;
+  apm_config.gain_controller2.enabled = false;
+
 
   if (options.echo_cancellation) {
     apm_config.echo_canceller.enabled = *options.echo_cancellation;

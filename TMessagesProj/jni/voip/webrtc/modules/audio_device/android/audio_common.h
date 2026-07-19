@@ -20,7 +20,7 @@ const int kDefaultSampleRate = 44100;
 // delays in the range [50, ~170] ms and [150, ~270] ms. Note that, in most
 // cases, the lowest delay estimate will not be utilized since devices that
 // support low-latency output audio often supports HW AEC as well.
-const int kLowLatencyModeDelayEstimateInMilliseconds = 20;
+const int kLowLatencyModeDelayEstimateInMilliseconds = 10;
 const int kHighLatencyModeDelayEstimateInMilliseconds = 150;
 
 }  // namespace webrtc

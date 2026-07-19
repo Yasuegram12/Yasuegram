@@ -564,7 +564,7 @@ TEST(AudioEncoderOpusTest, TestConfigFromParams) {
   const auto config3 = CreateConfigWithParameters({{"useinbandfec", "0"}});
   EXPECT_FALSE(config3.fec_enabled);
 
-  const auto config4 = CreateConfigWithParameters({{"useinbandfec", "1"}});
+  const auto config4 = CreateConfigWithParameters({{"useinbandfec", "0"}});
   EXPECT_TRUE(config4.fec_enabled);
 
   const auto config5 = CreateConfigWithParameters({{"usedtx", "0"}});

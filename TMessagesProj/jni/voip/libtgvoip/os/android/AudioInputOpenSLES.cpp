@@ -13,7 +13,7 @@
 #include "OpenSLEngineWrapper.h"
 
 #define CHECK_SL_ERROR(res, msg) if(res!=SL_RESULT_SUCCESS){ LOGE(msg); return; }
-#define BUFFER_SIZE 960 // 20 ms
+#define BUFFER_SIZE 120 // 20 ms
 
 using namespace tgvoip;
 using namespace tgvoip::audio;
@@ -31,7 +31,7 @@ AudioInputOpenSLES::AudioInputOpenSLES(){
 		nativeBufferSize+=nativeBufferSize%BUFFER_SIZE;
 	}
 	if(nativeBufferSize==BUFFER_SIZE)
-		nativeBufferSize*=2;
+		nativeBufferSize*=1;
 	LOGI("Adjusted native buffer size is %u", nativeBufferSize);
 
 	buffer=(int16_t*)calloc(BUFFER_SIZE, sizeof(int16_t));

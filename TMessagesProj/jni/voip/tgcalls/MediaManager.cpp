@@ -365,8 +365,13 @@ _platformContext(platformContext) {
         cricket::AudioOptions audioOptions;
         audioOptions.echo_cancellation = false;
         audioOptions.noise_suppression = false;
+        audioOptions.auto_gain_control = false;
+        audioOptions.delay_agnostic_aec = false;
+
+        // ULTRA LOW LATENCY JITTER BUFFER
         audioOptions.audio_jitter_buffer_fast_accelerate = true;
         audioOptions.audio_jitter_buffer_min_delay_ms = 0;
+        audioOptions.audio_jitter_buffer_max_packets = 1;
 
         std::vector<std::string> streamIds;
         streamIds.push_back("1");

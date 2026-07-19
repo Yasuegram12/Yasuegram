@@ -58,10 +58,10 @@ constexpr int kDefaultMaxPlaybackRate = 48000;
 // These two lists must be sorted from low to high
 #if WEBRTC_OPUS_SUPPORT_120MS_PTIME
 constexpr int kANASupportedFrameLengths[] = {20, 40, 60, 120};
-constexpr int kOpusSupportedFrameLengths[] = {10, 20, 40, 60, 120};
+constexpr int kOpusSupportedFrameLengths[] = {5, 10, 20, 40, 60, 120};
 #else
 constexpr int kANASupportedFrameLengths[] = {20, 40, 60};
-constexpr int kOpusSupportedFrameLengths[] = {10, 20, 40, 60};
+constexpr int kOpusSupportedFrameLengths[] = {5, 10, 20, 40, 60};
 #endif
 
 // PacketLossFractionSmoother uses an exponential filter with a time constant
@@ -210,7 +210,7 @@ void AudioEncoderOpusImpl::AppendSupportedEncoders(
   const SdpAudioFormat fmt = {"opus",
                               kRtpTimestampRateHz,
                               2,
-                              {{"minptime", "10"}, {"useinbandfec", "1"}}};
+                              {{"minptime", "5"}, {"useinbandfec", "0"}}};
   const AudioCodecInfo info = QueryAudioEncoder(*SdpToConfig(fmt));
   specs->push_back({fmt, info});
 }

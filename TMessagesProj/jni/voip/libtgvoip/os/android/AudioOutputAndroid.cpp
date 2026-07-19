@@ -34,7 +34,7 @@ AudioOutputAndroid::AudioOutputAndroid(){
 	DEBUG_REF("AudioOutputAndroid");
 	javaObject=env->NewGlobalRef(obj);
 
-	env->CallVoidMethod(javaObject, initMethod, 48000, 16, 1, 960*2);
+	env->CallVoidMethod(javaObject, initMethod, 48000, 16, 1, 240*2);
 
 	if(didAttach){
 		sharedJVM->DetachCurrentThread();

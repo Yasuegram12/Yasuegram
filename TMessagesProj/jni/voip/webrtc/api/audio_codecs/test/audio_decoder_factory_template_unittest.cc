@@ -207,7 +207,7 @@ TEST(AudioDecoderFactoryTemplateTest, Opus) {
   opus_info.allow_comfort_noise = false;
   opus_info.supports_network_adaption = true;
   const SdpAudioFormat opus_format(
-      {"opus", 48000, 2, {{"minptime", "10"}, {"useinbandfec", "1"}}});
+      {"opus", 48000, 2, {{"minptime", "5"}, {"useinbandfec", "0"}}});
   EXPECT_THAT(factory->GetSupportedDecoders(),
               ::testing::ElementsAre(AudioCodecSpec{opus_format, opus_info}));
   EXPECT_FALSE(factory->IsSupportedDecoder({"opus", 48000, 1}));

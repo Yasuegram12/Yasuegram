@@ -38,8 +38,8 @@ void AudioDecoderMultiChannelOpus::AppendSupportedDecoders(
     SdpAudioFormat opus_format({"multiopus",
                                 48000,
                                 6,
-                                {{"minptime", "10"},
-                                 {"useinbandfec", "1"},
+                                {{"minptime", "5"},
+                                 {"useinbandfec", "0"},
                                  {"channel_mapping", "0,4,1,2,3,5"},
                                  {"num_streams", "4"},
                                  {"coupled_streams", "2"}}});
@@ -53,8 +53,8 @@ void AudioDecoderMultiChannelOpus::AppendSupportedDecoders(
     SdpAudioFormat opus_format({"multiopus",
                                 48000,
                                 8,
-                                {{"minptime", "10"},
-                                 {"useinbandfec", "1"},
+                                {{"minptime", "5"},
+                                 {"useinbandfec", "0"},
                                  {"channel_mapping", "0,6,1,2,3,4,5,7"},
                                  {"num_streams", "5"},
                                  {"coupled_streams", "3"}}});

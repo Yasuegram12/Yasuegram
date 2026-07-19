@@ -18,7 +18,7 @@
 
 #include "VoIPController.h"
 
-#define PACKET_SIZE (960*2)
+#define PACKET_SIZE (240*2)
 
 using namespace tgvoip;
 
@@ -126,26 +126,26 @@ size_t tgvoip::OpusDecoder::HandleCallback(unsigned char *data, size_t len){
 				echoCanceller->SpeakerOutCallback(data, PACKET_SIZE);
 			}
 		}else{
-			LOGE("Opus decoder buffer length != 960 samples");
+			LOGE("Opus decoder buffer length != 240 samples");
 			abort();
 		}
 	}else{
 		if(remainingDataLen==0 && silentPacketCount==0){
 			int duration=DecodeNextFrame();
-			remainingDataLen=(size_t) (duration/20*960*2);
+			remainingDataLen=(size_t) (duration/5*240*2);
 		}
 		if(silentPacketCount>0 || remainingDataLen==0 || !processedBuffer){
 			if(silentPacketCount>0)
 				silentPacketCount--;
-			memset(data, 0, 960*2);
+			memset(data, 0, 240*2);
 			if(levelMeter)
 				levelMeter->Update(reinterpret_cast<int16_t *>(data), 0);
 			return 0;
 		}
-		memcpy(data, processedBuffer, 960*2);
-		remainingDataLen-=960*2;
+		memcpy(data, processedBuffer, 240*2);
+		remainingDataLen-=240*2;
 		if(remainingDataLen>0){
-			memmove(processedBuffer, processedBuffer+960*2, remainingDataLen);
+			memmove(processedBuffer, processedBuffer+240*2, remainingDataLen);
 		}
 	}
 	if(levelMeter)
@@ -188,7 +188,7 @@ void tgvoip::OpusDecoder::RunThread(){
 			if(buf){
 				if(remainingDataLen>0){
 					for(effects::AudioEffect*& effect:postProcEffects){
-						effect->Process(reinterpret_cast<int16_t*>(processedBuffer+(PACKET_SIZE*i)), 960);
+						effect->Process(reinterpret_cast<int16_t*>(processedBuffer+(PACKET_SIZE*i)), 240);
 					}
 					memcpy(buf, processedBuffer+(PACKET_SIZE*i), PACKET_SIZE);
 				}else{
@@ -206,11 +206,11 @@ void tgvoip::OpusDecoder::RunThread(){
 int tgvoip::OpusDecoder::DecodeNextFrame(){
 	int playbackDuration=0;
 	bool isEC=false;
-	size_t len=jitterBuffer->HandleOutput(buffer, 8192, 0, true, playbackDuration, isEC);
+	size_t len=jitterBuffer->HandleOutput(buffer, 2048, 0, true, playbackDuration, isEC);
 	bool fec=false;
 	if(!len){
 		fec=true;
-		len=jitterBuffer->HandleOutput(buffer, 8192, 0, false, playbackDuration, isEC);
+		len=jitterBuffer->HandleOutput(buffer, 2048, 0, false, playbackDuration, isEC);
 		//if(len)
 		//	LOGV("Trying FEC...");
 	}

@@ -77,7 +77,7 @@ EchoCanceller::EchoCanceller(bool enableAEC, bool enableNS, bool enableAGC){
     audioFrame->num_channels_ = 1;
 
     farendQueue = new BlockingQueue<int16_t *>(11);
-    farendBufferPool = new BufferPool(960 * 2, 10);
+    farendBufferPool = new BufferPool(240 * 2, 10);
     running = true;
     bufferFarendThread = new Thread(std::bind(&EchoCanceller::RunBufferFarendThread, this));
     bufferFarendThread->Start();
@@ -105,12 +105,12 @@ void EchoCanceller::Stop() {
 }
 
 void EchoCanceller::SpeakerOutCallback(unsigned char* data, size_t len) {
-    if (len != 960 * 2 || !enableAEC || !isOn)
+    if (len != 240 * 2 || !enableAEC || !isOn)
         return;
 #ifndef TGVOIP_NO_DSP
     int16_t *buf = (int16_t *) farendBufferPool->Get();
     if (buf) {
-        memcpy(buf, data, 960 * 2);
+        memcpy(buf, data, 240 * 2);
         farendQueue->Put(buf);
     }
 #endif
@@ -152,7 +152,7 @@ void EchoCanceller::ProcessInput(int16_t* inOut, size_t numSamples, bool& hasVoi
         return;
     }
     int delay = audio::AudioInput::GetEstimatedDelay() + audio::AudioOutput::GetEstimatedDelay();
-    assert(numSamples == 960);
+    assert(numSamples == 240);
 
     webrtc::StreamConfig input_config(audioFrame->sample_rate_hz_, audioFrame->num_channels_);
     webrtc::StreamConfig output_config(audioFrame->sample_rate_hz_, audioFrame->num_channels_);

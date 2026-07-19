@@ -126,7 +126,7 @@ TEST(BuiltinAudioEncoderFactoryTest, SupportsTheExpectedFormats) {
 
   const std::vector<SdpAudioFormat> expected_formats = {
 #ifdef WEBRTC_CODEC_OPUS
-    {"opus", 48000, 2, {{"minptime", "10"}, {"useinbandfec", "1"}}},
+    {"opus", 48000, 2, {{"minptime", "5"}, {"useinbandfec", "0"}}},
 #endif
 #if defined(WEBRTC_CODEC_ISAC) || defined(WEBRTC_CODEC_ISACFX)
     {"isac", 16000, 1},

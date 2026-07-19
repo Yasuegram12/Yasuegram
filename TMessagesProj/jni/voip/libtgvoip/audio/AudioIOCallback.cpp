@@ -61,12 +61,12 @@ void AudioInputCallback::SetDataCallback(std::function<void(int16_t*, size_t)> c
 }
 
 void AudioInputCallback::RunThread(){
-	int16_t buf[960];
+	int16_t buf[240];
 	while(running){
 		double t=VoIPController::GetCurrentTime();
 		memset(buf, 0, sizeof(buf));
-		dataCallback(buf, 960);
-		InvokeCallback(reinterpret_cast<unsigned char*>(buf), 960*2);
+		dataCallback(buf, 240);
+		InvokeCallback(reinterpret_cast<unsigned char*>(buf), 240*2);
 		double sl=0.02-(VoIPController::GetCurrentTime()-t);
 		if(sl>0)
 			Thread::Sleep(sl);
@@ -107,11 +107,11 @@ void AudioOutputCallback::SetDataCallback(std::function<void(int16_t*, size_t)> 
 }
 
 void AudioOutputCallback::RunThread(){
-	int16_t buf[960];
+	int16_t buf[240];
 	while(running){
 		double t=VoIPController::GetCurrentTime();
-		InvokeCallback(reinterpret_cast<unsigned char*>(buf), 960*2);
-		dataCallback(buf, 960);
+		InvokeCallback(reinterpret_cast<unsigned char*>(buf), 240*2);
+		dataCallback(buf, 240);
 		double sl=0.02-(VoIPController::GetCurrentTime()-t);
 		if(sl>0)
 			Thread::Sleep(sl);

@@ -411,6 +411,10 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   // TODO(henrika): investigate performance using different performance modes.
   AAudioStreamBuilder_setPerformanceMode(builder,
                                          AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+
+  // ULTRA BUFFER 128 FRAMES
+  // Request minimum possible audio buffer
+  
   // Given that WebRTC applications require low latency, our audio stream uses
   // an asynchronous callback function to transfer data to and from the
   // application. AAudio executes the callback in a higher-priority thread that
@@ -427,6 +431,13 @@ bool AAudioWrapper::OpenStream(AAudioStreamBuilder* builder) {
   AAudioStream* stream = nullptr;
   RETURN_ON_ERROR(AAudioStreamBuilder_openStream(builder, &stream), false);
   stream_ = stream;
+
+  // ULTRA LOW LATENCY BUFFER MODE
+  int32_t burst = AAudioStream_getFramesPerBurst(stream_);
+  if (burst > 0) {
+    AAudioStream_setBufferSizeInFrames(stream_, burst);
+  }
+
   LogStreamConfiguration();
   return true;
 }
@@ -513,17 +524,11 @@ bool AAudioWrapper::OptimizeBuffers() {
   // Yasuegram ultra low latency tuning
   int32_t requested_buffer_size = frames_per_burst_;
 
-  if (requested_buffer_size < 32) {
-    requested_buffer_size = 32;
-  }
+  // Keep native burst size for minimum latency
 
   // Yasuegram adaptive initial buffer:
   // Follow device burst size instead of fixed value.
-  const int32_t max_initial_buffer = frames_per_burst_ * 2;
-
-  if (requested_buffer_size > max_initial_buffer) {
-    requested_buffer_size = max_initial_buffer;
-  }
+  // Do not enlarge initial buffer
   int32_t original_buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   RTC_LOG(LS_INFO) << "[Yasuegram] Original buffer size: " << original_buffer_size << ", Requested: " << requested_buffer_size;
   int32_t result_buffer_size =

@@ -378,6 +378,10 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   // TODO(henrika): investigate performance using different performance modes.
   AAudioStreamBuilder_setPerformanceMode(builder,
                                          AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+
+  // ULTRA BUFFER 128 FRAMES
+  // Request minimum possible audio buffer
+  
   // Given that WebRTC applications require low latency, our audio stream uses
   // an asynchronous callback function to transfer data to and from the
   // application. AAudio executes the callback in a higher-priority thread that
@@ -484,7 +488,7 @@ bool AAudioWrapper::OptimizeBuffers() {
   // Set buffer size to same as burst size to guarantee lowest possible latency.
   // This size might change for output streams if underruns are detected and
   // automatic buffer adjustment is enabled.
-  AAudioStream_setBufferSizeInFrames(stream_, frames_per_burst);
+  AAudioStream_setBufferSizeInFrames(stream_, frames_per_burst / 2);
   int32_t buffer_size = AAudioStream_getBufferSizeInFrames(stream_);
   if (buffer_size != frames_per_burst) {
     RTC_LOG(LS_ERROR) << "Failed to use optimal buffer burst size";

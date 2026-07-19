@@ -1091,7 +1091,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCCodecStatsOnlyIfReferenced) {
   inbound_audio_codec.name = "opus";
   inbound_audio_codec.clock_rate = 1337;
   inbound_audio_codec.num_channels = 1;
-  inbound_audio_codec.parameters = {{"minptime", "10"}, {"useinbandfec", "1"}};
+  inbound_audio_codec.parameters = {{"minptime", "5"}, {"useinbandfec", "0"}};
   voice_media_info.receive_codecs.insert(
       std::make_pair(inbound_audio_codec.payload_type, inbound_audio_codec));
 
@@ -1310,7 +1310,7 @@ TEST_F(RTCStatsCollectorTest, SamePayloadTypeButDifferentFmtpLines) {
   inbound_codec_pt111_fec.name = "opus";
   inbound_codec_pt111_fec.clock_rate = 48000;
   inbound_codec_pt111_fec.parameters.insert(
-      std::make_pair("useinbandfec", "1"));
+      std::make_pair("useinbandfec", "0"));
 
   cricket::VideoMediaInfo info_nofec;
   info_nofec.receive_codecs.insert(std::make_pair(
@@ -1358,7 +1358,7 @@ TEST_F(RTCStatsCollectorTest, SamePayloadTypeButDifferentFmtpLines) {
   inbound_codec_pt112_fec.name = "opus";
   inbound_codec_pt112_fec.clock_rate = 48000;
   inbound_codec_pt112_fec.parameters.insert(
-      std::make_pair("useinbandfec", "1"));
+      std::make_pair("useinbandfec", "0"));
   cricket::VideoMediaInfo info_fec_pt112;
   info_fec_pt112.receive_codecs.insert(std::make_pair(
       inbound_codec_pt112_fec.payload_type, inbound_codec_pt112_fec));

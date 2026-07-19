@@ -207,13 +207,13 @@ TEST(AudioEncoderFactoryTemplateTest, Opus) {
   EXPECT_THAT(
       factory->GetSupportedEncoders(),
       ::testing::ElementsAre(AudioCodecSpec{
-          {"opus", 48000, 2, {{"minptime", "10"}, {"useinbandfec", "1"}}},
+          {"opus", 48000, 2, {{"minptime", "5"}, {"useinbandfec", "0"}}},
           info}));
   EXPECT_EQ(absl::nullopt, factory->QueryAudioEncoder({"foo", 8000, 1}));
   EXPECT_EQ(
       info,
       factory->QueryAudioEncoder(
-          {"opus", 48000, 2, {{"minptime", "10"}, {"useinbandfec", "1"}}}));
+          {"opus", 48000, 2, {{"minptime", "5"}, {"useinbandfec", "0"}}}));
   EXPECT_EQ(nullptr,
             factory->MakeAudioEncoder(17, {"bar", 16000, 1}, absl::nullopt));
   auto enc = factory->MakeAudioEncoder(17, {"opus", 48000, 2}, absl::nullopt);

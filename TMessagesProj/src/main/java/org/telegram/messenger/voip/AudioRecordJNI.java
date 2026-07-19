@@ -185,7 +185,7 @@ public class AudioRecordJNI {
 			while (running) {
 				try {
 					if (!needResampling) {
-						audioRecord.read(buffer, 960 * 2);
+						audioRecord.read(buffer, 240 * 2);
 					} else {
 						audioRecord.read(tmpBuf, 882 * 2);
 						Resampler.convert44to48(tmpBuf, buffer);
@@ -201,7 +201,8 @@ public class AudioRecordJNI {
 			}
 			VLog.i("audiorecord thread exits");
 		});
-		thread.start();
+		thread.setPriority(Thread.MAX_PRIORITY);
+                thread.start();
 	}
 
 	public int getEnabledEffectsMask() {

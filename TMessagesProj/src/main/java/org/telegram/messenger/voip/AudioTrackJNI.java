@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 
 public class AudioTrackJNI {
 	private AudioTrack audioTrack;
-	private byte[] buffer = new byte[960 * 2];
+	private byte[] buffer = new byte[240 * 2];
 	private boolean running;
 	private Thread thread;
 	private boolean needResampling;
@@ -92,7 +92,7 @@ public class AudioTrackJNI {
 				VLog.e("error starting AudioTrack", x);
 				return;
 			}
-			ByteBuffer tmp48 = needResampling ? ByteBuffer.allocateDirect(960 * 2) : null;
+			ByteBuffer tmp48 = needResampling ? ByteBuffer.allocateDirect(240 * 2) : null;
 			ByteBuffer tmp44 = needResampling ? ByteBuffer.allocateDirect(882 * 2) : null;
 			while (running) {
 				try {
@@ -106,7 +106,7 @@ public class AudioTrackJNI {
 						audioTrack.write(buffer, 0, 882 * 2);
 					} else {
 						nativeCallback(buffer);
-						audioTrack.write(buffer, 0, 960 * 2);
+						audioTrack.write(buffer, 0, 240 * 2);
 					}
 					if (!running) {
 						audioTrack.stop();
@@ -118,7 +118,8 @@ public class AudioTrackJNI {
 			}
 			VLog.i("audiotrack thread exits");
 		});
-		thread.start();
+		thread.setPriority(Thread.MAX_PRIORITY);
+                thread.start();
 	}
 
 	private native void nativeCallback(byte[] buf);
