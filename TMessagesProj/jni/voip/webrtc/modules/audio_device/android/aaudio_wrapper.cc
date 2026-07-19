@@ -439,7 +439,7 @@ bool AAudioWrapper::OpenStream(AAudioStreamBuilder* builder) {
   // ULTRA LOW LATENCY BUFFER MODE
   int32_t burst = AAudioStream_getFramesPerBurst(stream_);
   if (burst > 0) {
-    AAudioStream_setBufferSizeInFrames(stream_, burst);
+    AAudioStream_setBufferSizeInFrames(stream_, burst * 2);
   }
 
   LogStreamConfiguration();
@@ -533,7 +533,7 @@ bool AAudioWrapper::OptimizeBuffers() {
                    << frames_per_burst_;
 
   // Yasuegram ultra low latency tuning
-  int32_t requested_buffer_size = frames_per_burst_;
+  int32_t requested_buffer_size = frames_per_burst_ * 2;
 
   // Keep native burst size for minimum latency
 
