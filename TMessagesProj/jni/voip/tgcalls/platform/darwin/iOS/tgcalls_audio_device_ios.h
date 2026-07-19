@@ -258,12 +258,12 @@ class AudioDeviceIOS : public AudioDeviceGeneric,
   // of directly with the AudioDeviceBuffer one can ask for any number of
   // audio data samples. Is also supports a similar scheme for the recording
   // side.
-  // Example: native buffer size can be 128 audio frames at 16kHz sample rate.
-  // WebRTC will provide 480 audio frames per 10ms but iOS asks for 128
-  // in each callback (one every 8ms). This class can then ask for 128 and the
+  // Example: native buffer size can be 256 audio frames at 16kHz sample rate.
+  // WebRTC will provide 480 audio frames per 10ms but iOS asks for 256
+  // in each callback (one every 8ms). This class can then ask for 256 and the
   // FineAudioBuffer will ask WebRTC for new data only when needed and also
   // cache non-utilized audio between callbacks. On the recording side, iOS
-  // can provide audio data frames of size 128 and these are accumulated until
+  // can provide audio data frames of size 256 and these are accumulated until
   // enough data to supply one 10ms call exists. This 10ms chunk is then sent
   // to WebRTC and the remaining part is stored.
   std::unique_ptr<FineAudioBuffer> fine_audio_buffer_;

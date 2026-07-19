@@ -1396,7 +1396,7 @@ public:
         threads->getWorkerThread()->BlockingCall([this, rtpTransport, ssrc, onAudioFrame = std::move(onAudioFrame), onAudioLevelUpdated = std::move(onAudioLevelUpdated), isRawPcm, userId, e2eEncryptDecrypt, payloadTypeMapping, setAudioLevelAndSpeech]() mutable {
             cricket::AudioOptions audioOptions;
             audioOptions.audio_jitter_buffer_fast_accelerate = true;
-            audioOptions.audio_jitter_buffer_min_delay_ms = 0; // Yasuegram ultra low latency
+            audioOptions.audio_jitter_buffer_min_delay_ms = 10; // Yasuegram ultra low latency
 
             std::string streamId = std::string("stream") + ssrc.name();
 

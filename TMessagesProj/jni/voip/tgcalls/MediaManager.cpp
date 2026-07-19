@@ -368,8 +368,8 @@ _platformContext(platformContext) {
         audioOptions.auto_gain_control = false;
 
         // ULTRA LOW LATENCY JITTER BUFFER
-        audioOptions.audio_jitter_buffer_fast_accelerate = true;
-        audioOptions.audio_jitter_buffer_min_delay_ms = 0;
+        audioOptions.audio_jitter_buffer_fast_accelerate = false;
+        audioOptions.audio_jitter_buffer_min_delay_ms = 10;
         audioOptions.audio_jitter_buffer_max_packets = 1;
 
         std::vector<std::string> streamIds;

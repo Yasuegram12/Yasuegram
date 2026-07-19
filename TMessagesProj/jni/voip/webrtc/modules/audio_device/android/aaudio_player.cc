@@ -169,7 +169,7 @@ aaudio_data_callback_result_t AAudioPlayer::OnDataCallback(void* audio_data,
   if (underrun_count > underrun_count_) {
     RTC_LOG(LS_ERROR) << "Underrun detected: " << underrun_count;
     underrun_count_ = underrun_count;
-    aaudio_.IncreaseOutputBufferSize();
+    
   }
 
   // Estimate latency between writing an audio frame to the output stream and

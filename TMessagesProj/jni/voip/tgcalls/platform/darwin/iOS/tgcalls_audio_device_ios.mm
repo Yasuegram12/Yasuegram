@@ -759,8 +759,8 @@ void AudioDeviceIOS::SetupAudioBuffersForActiveAudioSession() {
   // At this stage, we also know the exact IO buffer duration and can add
   // that info to the existing audio parameters where it is converted into
   // number of audio frames.
-  // Example: IO buffer size = 0.008 seconds <=> 128 audio frames at 16kHz.
-  // Hence, 128 is the size we expect to see in upcoming render callbacks.
+  // Example: IO buffer size = 0.008 seconds <=> 256 audio frames at 16kHz.
+  // Hence, 256 is the size we expect to see in upcoming render callbacks.
   playout_parameters_.reset(sample_rate, playout_parameters_.channels(), io_buffer_duration);
   RTC_DCHECK(playout_parameters_.is_complete());
   record_parameters_.reset(sample_rate, record_parameters_.channels(), io_buffer_duration);

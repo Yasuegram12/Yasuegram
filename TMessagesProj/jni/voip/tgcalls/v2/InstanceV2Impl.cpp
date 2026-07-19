@@ -336,7 +336,7 @@ public:
 
         cricket::AudioOptions audioOptions;
         audioOptions.audio_jitter_buffer_fast_accelerate = true;
-        audioOptions.audio_jitter_buffer_min_delay_ms = 0; // Yasuegram ultra low latency
+        audioOptions.audio_jitter_buffer_min_delay_ms = 10; // Yasuegram ultra low latency
 
         const auto streamId = std::to_string(_ssrc);
 

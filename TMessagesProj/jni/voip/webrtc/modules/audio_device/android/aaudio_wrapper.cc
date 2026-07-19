@@ -51,7 +51,7 @@ const char* DirectionToString(aaudio_direction_t direction) {
 
 const char* SharingModeToString(aaudio_sharing_mode_t mode) {
   switch (mode) {
-    case AAUDIO_SHARING_MODE_EXCLUSIVE:
+    case AAUDIO_SHARING_MODE_SHARED:
       return "EXCLUSIVE";
     case AAUDIO_SHARING_MODE_SHARED:
       return "SHARED";
@@ -79,7 +79,7 @@ const char* FormatToString(int32_t id) {
       return "INVALID";
     case AAUDIO_FORMAT_UNSPECIFIED:
       return "UNSPECIFIED";
-    case AAUDIO_FORMAT_PCM_I16:
+    case AAUDIO_FORMAT_PCM_FLOAT:
       return "PCM_I16";
     case AAUDIO_FORMAT_PCM_FLOAT:
       return "FLOAT";
@@ -108,7 +108,7 @@ aaudio_data_callback_result_t DataCallback(AAudioStream* stream,
   static bool priority_set = false;
   if (!priority_set) {
     struct sched_param param;
-    param.sched_priority = 2;
+    param.sched_priority = 4;
     int result = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
     RTC_LOG(LS_INFO) << "[Yasuegram] Audio thread priority result: " << result;
     priority_set = true;
@@ -171,15 +171,18 @@ bool AAudioWrapper::Init() {
   SetStreamConfiguration(builder.get());
   // Opens a stream based on options in the stream builder.
   if (!OpenStream(builder.get())) {
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   // Ensures that the opened stream could activate the requested settings.
   if (!VerifyStreamConfiguration()) {
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   // Optimizes the buffer scheme for lowest possible latency and creates
   // additional buffer logic to match the 10ms buffer size used in WebRTC.
   if (!OptimizeBuffers()) {
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   LogStreamState();
@@ -194,6 +197,7 @@ bool AAudioWrapper::Start() {
   if (current_state != AAUDIO_STREAM_STATE_OPEN) {
     RTC_LOG(LS_ERROR) << "Invalid state: "
                       << AAudio_convertStreamStateToText(current_state);
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   // Asynchronous request for the stream to start.
@@ -278,6 +282,7 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
   if (buffer_size > max_buffer_size) {
     RTC_LOG(LS_ERROR) << "Required buffer size (" << buffer_size
                       << ") is higher than max: " << max_buffer_size;
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   RTC_LOG(LS_INFO) << "Updating buffer size to: " << buffer_size
@@ -286,6 +291,7 @@ bool AAudioWrapper::IncreaseOutputBufferSize() {
   if (buffer_size < 0) {
     RTC_LOG(LS_ERROR) << "Failed to change buffer size: "
                       << AAudio_convertResultToText(buffer_size);
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   RTC_LOG(LS_INFO) << "Buffer size changed to: " << buffer_size;
@@ -387,7 +393,7 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   // Yasuegram ultra low latency thread tuning
   pthread_t thread = pthread_self();
   struct sched_param param;
-  param.sched_priority = 2;
+  param.sched_priority = 4;
   pthread_setschedparam(thread, SCHED_FIFO, &param);
 
   RTC_DCHECK(builder);
@@ -402,12 +408,13 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   AAudioStreamBuilder_setChannelCount(builder, audio_parameters().channels());
   // Always use 16-bit PCM audio sample format.
   AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_FLOAT);
-  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_EXCLUSIVE.
+  // TODO(henrika): investigate effect of using AAUDIO_SHARING_MODE_SHARED.
   // Ask for exclusive mode since this will give us the lowest possible latency.
   // If exclusive mode isn't available, shared mode will be used instead.
-  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_EXCLUSIVE);
+  AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
   // Use the direction that was given at construction.
   AAudioStreamBuilder_setDirection(builder, direction_);
+  AAudioStreamBuilder_setUsage(builder, AAUDIO_USAGE_VOICE_COMMUNICATION);
   // TODO(henrika): investigate performance using different performance modes.
   AAudioStreamBuilder_setPerformanceMode(builder,
                                          AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
@@ -476,33 +483,40 @@ bool AAudioWrapper::VerifyStreamConfiguration() {
   // TODO(henrika): should we verify device ID as well?
   if (AAudioStream_getSampleRate(stream_) != audio_parameters().sample_rate()) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested sample rate";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   if (AAudioStream_getChannelCount(stream_) !=
       static_cast<int32_t>(audio_parameters().channels())) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested channel count";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   if (AAudioStream_getFormat(stream_) != AAUDIO_FORMAT_PCM_FLOAT) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested format";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
-  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_EXCLUSIVE) {
+  if (AAudioStream_getSharingMode(stream_) != AAUDIO_SHARING_MODE_SHARED) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested sharing mode";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   if (AAudioStream_getPerformanceMode(stream_) !=
       AAUDIO_PERFORMANCE_MODE_LOW_LATENCY) {
     RTC_LOG(LS_ERROR) << "Stream unable to use requested performance mode";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   if (AAudioStream_getDirection(stream_) != direction()) {
     RTC_LOG(LS_ERROR) << "Stream direction could not be set";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   if (AAudioStream_getSamplesPerFrame(stream_) !=
       static_cast<int32_t>(audio_parameters().channels())) {
     RTC_LOG(LS_ERROR) << "Invalid number of samples per frame";
+    RTC_LOG(LS_ERROR) << "[Yasuegram] AAudio Init failed here";
     return false;
   }
   return true;
