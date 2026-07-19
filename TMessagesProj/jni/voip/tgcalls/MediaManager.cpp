@@ -366,7 +366,6 @@ _platformContext(platformContext) {
         audioOptions.echo_cancellation = false;
         audioOptions.noise_suppression = false;
         audioOptions.auto_gain_control = false;
-        audioOptions.delay_agnostic_aec = false;
 
         // ULTRA LOW LATENCY JITTER BUFFER
         audioOptions.audio_jitter_buffer_fast_accelerate = true;
