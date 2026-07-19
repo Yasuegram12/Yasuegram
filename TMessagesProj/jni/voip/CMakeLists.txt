@@ -1918,6 +1918,9 @@ add_library(voipandroid STATIC
         voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
         voip/webrtc/modules/audio_device/android/aaudio_player.cc
         voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_player.cc
+        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_recorder.cc
         voip/webrtc/sdk/android/native_api/video/video_source.cc
         voip/webrtc/sdk/android/native_api/video/wrapper.cc
         voip/webrtc/sdk/android/native_api/codecs/wrapper.cc
