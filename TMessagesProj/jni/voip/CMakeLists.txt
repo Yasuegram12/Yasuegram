@@ -1007,9 +1007,6 @@ add_library(tgcalls STATIC
         voip/webrtc/modules/audio_device/audio_device_name.cc
         voip/webrtc/modules/audio_device/dummy/audio_device_dummy.cc
         voip/webrtc/modules/audio_device/dummy/file_audio_device.cc
-        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_wrapper.cc
-        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_player.cc
-        voip/webrtc/sdk/android/src/jni/audio_device/aaudio_recorder.cc
         voip/webrtc/modules/audio_device/dummy/file_audio_device_factory.cc
         voip/webrtc/modules/audio_device/fine_audio_buffer.cc
 #        voip/webrtc/modules/audio_device/include/test_audio_device.cc
@@ -1918,6 +1915,9 @@ add_library(voipandroid STATIC
         voip/webrtc/modules/audio_device/android/opensles_common.cc
         voip/webrtc/modules/audio_device/android/opensles_player.cc
         voip/webrtc/modules/audio_device/android/opensles_recorder.cc
+        voip/webrtc/modules/audio_device/android/aaudio_wrapper.cc
+        voip/webrtc/modules/audio_device/android/aaudio_player.cc
+        voip/webrtc/modules/audio_device/android/aaudio_recorder.cc
         voip/webrtc/sdk/android/native_api/video/video_source.cc
         voip/webrtc/sdk/android/native_api/video/wrapper.cc
         voip/webrtc/sdk/android/native_api/codecs/wrapper.cc
