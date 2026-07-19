@@ -414,7 +414,6 @@ void AAudioWrapper::SetStreamConfiguration(AAudioStreamBuilder* builder) {
   AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
   // Use the direction that was given at construction.
   AAudioStreamBuilder_setDirection(builder, direction_);
-  AAudioStreamBuilder_setUsage(builder, AAUDIO_USAGE_VOICE_COMMUNICATION);
   // TODO(henrika): investigate performance using different performance modes.
   AAudioStreamBuilder_setPerformanceMode(builder,
                                          AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
