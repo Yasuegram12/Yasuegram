@@ -599,7 +599,7 @@ void WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
   webrtc::AudioProcessing::Config apm_config = ap->GetConfig();
 
   // ULTRA LOW LATENCY AUDIO MODE
-  apm_config.echo_cancellation.enabled = false;
+  apm_config.echo_canceller.enabled = false;
   apm_config.noise_suppression.enabled = false;
   apm_config.high_pass_filter.enabled = false;
   apm_config.gain_controller1.enabled = false;
