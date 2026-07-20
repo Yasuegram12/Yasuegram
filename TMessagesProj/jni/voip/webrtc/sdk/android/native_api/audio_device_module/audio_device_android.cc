@@ -222,10 +222,6 @@ rtc::scoped_refptr<AudioDeviceModule> CreateAndroidAudioDeviceModule(
     case AudioDeviceModule::kAndroidAAudioAudio:
       // AAudio based audio for both input and output.
       return CreateAAudioAudioDeviceModule(env, j_context.obj());
-    case AudioDeviceModule::kAndroidAAudioAudio:
-      // Java audio for input and AAudio for output audio (i.e. mixed APIs).
-      return CreateJavaInputAndAAudioOutputAudioDeviceModule(
-        env, j_context.obj());
 #endif
     default:
       return nullptr;
